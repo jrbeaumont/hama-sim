@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 0;
+}
+
+.beads circle {
+  stroke: #fff;
+  stroke-width: 0.1px;
+}
+
+</style>
+<svg width="4000" height="4000"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+svg.append("rect")
+   .attr("width", "100%")
+   .attr("height", "100%")
+   .attr("fill", "#dddddd");
+
+// var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+d3.json("data.json", function(error, graph) {
+  if (error) throw error;
+
+  var bead = svg.append("g")
+      .attr("class", "beads")
+    .selectAll("circle")
+    .data(graph.beads)
+    .enter()
+    .append("circle")
+      .attr("r", 10)
+      .attr("cx", function(d) {
+                                // var strings = d.id.split("_");
+                                // var max = 5000 - 5
+                                // var min = 6;
+                                // var xpos = 0;
+                                // strings.pop();
+                                // strings.pop();
+                                // // If this is root OR drain, set to middle
+                                // if (strings.length == 1) {
+                                //   return (max/2);
+                                // }
+                                // // Remove root or drain from strings
+                                // strings = strings.slice(1);
+                                // // If it is a leaf remove this from strings
+                                // if (strings[strings.length - 1] == "leaf") {
+                                //   strings.pop();
+                                // }
+                                // //For each level, find the max/min based on previous max/min
+                                // for (i = 0; i < strings.length; i++) {
+                                //   p = parseInt(strings[i]);
+                                //   p_min = p/fanout;
+                                //   p_max = (p+1)/fanout;
+                                //   diff = max - min;
+                                //   min = min + (diff * p_min);
+                                //   max = min + (diff * (1/fanout));
+                                // }
+                                // diff = max - min;
+                                // xpos = min + (diff/2);
+                                return (d.x);
+                              })
+      .attr("cy", function(d) {
+                                // var ypos = 0;
+                                // var strings = d.id.split("_");
+                                // //remove extern and out
+                                // strings.pop();
+                                // strings.pop();
+                                // //If it's a leaf it goes in the middle
+                                // if (strings[strings.length - 1] == "leaf") {
+                                //   return (2800/2);
+                                // }
+                                // //If it's length 1 it is root or drain, so position at top/bottom
+                                // if (strings.length == 1) {
+                                //   if (strings[0] == "root") {
+                                //     return (6);
+                                //   } else if (strings[0] == "drain") {
+                                //     return (2800 - 7);
+                                //   }
+                                // }
+                                // //Length of strings (subtract 1) is now it's depth
+                                // d = strings.length - 1;
+                                // max_depth = (depth * 2);
+                                // if (strings[0] == "drain") {
+                                //   d = max_depth - d;
+                                // }
+                                // ypos = (d/max_depth) * 2800;
+                                return (d.y);
+                              })
+      .attr("id", function(d) { return d.id+"_r"; } )
+      .attr("fill", "#000000");
+
+    //   var link = svg.selectAll("line")
+    // .data(graph.links)
+    // .enter()
+    // .append("line")
+    //   .attr("x1", function(l) {
+    //                             var source = d3.selectAll('#'+l.source+"_r");
+    //                             return source.attr("cx");
+    //                           })
+    //   .attr("y1", function(l) {
+    //                             var source = d3.selectAll('#'+l.source+"_r");
+    //                             return source.attr("cy");
+    //                           })
+    //   .attr("x2", function(l) {
+    //                             var target = d3.selectAll('#'+l.target+"_r");
+    //                             return target.attr("cx");
+    //                           })
+    //   .attr("y2", function(l) {
+    //                             var target = d3.selectAll('#'+l.target+"_r");
+    //                             return target.attr("cy");
+    //                           })
+    //   .style("stroke", "gray")
+    //   .style("stroke-width", "2");
+
+    d3.selectAll(".beads").raise();
+
+  // function updateHeat(id, v) {
+  //   d3.selectAll('#'+id+"_r")
+  //     .attr("fill", d3.interpolateRdYlGn(v*5));
+  // }
+
+  // // ----------------- Sockets ------------------------
+  // // open the websocket for receiving the data
+  // const socket = new WebSocket('ws://localhost:8079');
+
+  // // grab data
+  // socket.onmessage = function (evt) {
+  //     var d = JSON.parse(evt.data);
+  //     updateHeat(d.id,d.v); // update that firefly
+  // }
+
+});
+
+</script>
+
