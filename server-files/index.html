@@ -42,63 +42,8 @@ d3.json("data.json", function(error, graph) {
     .enter()
     .append("circle")
       .attr("r", 10)
-      .attr("cx", function(d) {
-                                // var strings = d.id.split("_");
-                                // var max = 5000 - 5
-                                // var min = 6;
-                                // var xpos = 0;
-                                // strings.pop();
-                                // strings.pop();
-                                // // If this is root OR drain, set to middle
-                                // if (strings.length == 1) {
-                                //   return (max/2);
-                                // }
-                                // // Remove root or drain from strings
-                                // strings = strings.slice(1);
-                                // // If it is a leaf remove this from strings
-                                // if (strings[strings.length - 1] == "leaf") {
-                                //   strings.pop();
-                                // }
-                                // //For each level, find the max/min based on previous max/min
-                                // for (i = 0; i < strings.length; i++) {
-                                //   p = parseInt(strings[i]);
-                                //   p_min = p/fanout;
-                                //   p_max = (p+1)/fanout;
-                                //   diff = max - min;
-                                //   min = min + (diff * p_min);
-                                //   max = min + (diff * (1/fanout));
-                                // }
-                                // diff = max - min;
-                                // xpos = min + (diff/2);
-                                return (d.x);
-                              })
-      .attr("cy", function(d) {
-                                // var ypos = 0;
-                                // var strings = d.id.split("_");
-                                // //remove extern and out
-                                // strings.pop();
-                                // strings.pop();
-                                // //If it's a leaf it goes in the middle
-                                // if (strings[strings.length - 1] == "leaf") {
-                                //   return (2800/2);
-                                // }
-                                // //If it's length 1 it is root or drain, so position at top/bottom
-                                // if (strings.length == 1) {
-                                //   if (strings[0] == "root") {
-                                //     return (6);
-                                //   } else if (strings[0] == "drain") {
-                                //     return (2800 - 7);
-                                //   }
-                                // }
-                                // //Length of strings (subtract 1) is now it's depth
-                                // d = strings.length - 1;
-                                // max_depth = (depth * 2);
-                                // if (strings[0] == "drain") {
-                                //   d = max_depth - d;
-                                // }
-                                // ypos = (d/max_depth) * 2800;
-                                return (d.y);
-                              })
+      .attr("cx", function(d) { return (d.x); })
+      .attr("cy", function(d) { return (d.y); })
       .attr("id", function(d) { return d.id+"_r"; } )
       .attr("fill", "#000000");
 
@@ -132,15 +77,29 @@ d3.json("data.json", function(error, graph) {
   //     .attr("fill", d3.interpolateRdYlGn(v*5));
   // }
 
-  // // ----------------- Sockets ------------------------
-  // // open the websocket for receiving the data
-  // const socket = new WebSocket('ws://localhost:8079');
+  function updatePosition(data) {
+        svg.append("circle")
+        .attr("r", 10)
+        .attr("cx", function(d) { return (1000); })
+        .attr("cy", function(d) { return (1000); })
+        .attr("id", function(d) { return "test_r"; } )
+        .attr("fill", "#000000");
+    // for (var d in data) {
+    //    d3.selectAll('#' + d.id + "_r")
+    //       .attr("cx", function(d) { return (d.x); })
+    //       .attr("cy", function(d) { return (d.y); })
+    // }
+  }
 
-  // // grab data
-  // socket.onmessage = function (evt) {
-  //     var d = JSON.parse(evt.data);
-  //     updateHeat(d.id,d.v); // update that firefly
-  // }
+  // ----------------- Sockets ------------------------
+  // open the websocket for receiving the data
+  const socket = new WebSocket('ws://localhost:8079');
+
+  // grab data
+  socket.onmessage = function (evt) {
+      var d = JSON.parse(evt.data);
+      updatePosition(d);
+  }
 
 });
 

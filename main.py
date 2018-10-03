@@ -80,7 +80,15 @@ def generate_d3_json_data(volume):
     o+= '}\n'
     print(o)
 
+def updatePosition(volume):
+    for i in range(0, cubesInVolLength):
+        for j in range(0, cubesInVolLength):
+            for b in volume.cubes[i][j].beads:
+                b.globalCoord = Coordinate(x = b.globalCoord.x + 10, y = b.globalCoord.y)
+
 v = Volume()
 
-if (visualise):
-    generate_d3_json_data(v)
+for x in range(0,100):
+    if (visualise):
+        generate_d3_json_data(v)
+    updatePosition(v)
