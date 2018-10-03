@@ -5,7 +5,7 @@
 # from graph.load_xml import load_graph_types_and_instances
 # from graph.save_xml_stream import save_graph
 import sys
-# import os
+import time
 import math
 # import csv
 
@@ -79,6 +79,7 @@ def generate_d3_json_data(volume):
     o+="\t]\n"
     o+= '}\n'
     print(o)
+    sys.stdout.flush()
 
 def updatePosition(volume):
     for i in range(0, cubesInVolLength):
@@ -88,7 +89,8 @@ def updatePosition(volume):
 
 v = Volume()
 
-for x in range(0,100):
+for x in range(0,1000):
     if (visualise):
         generate_d3_json_data(v)
     updatePosition(v)
+    time.sleep(0.01)

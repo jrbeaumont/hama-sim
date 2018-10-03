@@ -32,76 +32,88 @@ svg.append("rect")
 
 // var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-d3.json("data.json", function(error, graph) {
-  if (error) throw error;
+function updatePosition(data) {
+    for (var b in data.beads) {
+        var selection = d3.selectAll("circle#" + data.beads[b].id);
+        if (selection.empty())
+        {
+            svg.attr("class", "beads")
+                .append("circle")
+                .attr("r", 10)
+                .attr("cx", data.beads[b].x)
+                .attr("cy", data.beads[b].y)
+                .attr("id", data.beads[b].id)
+                .attr("fill", "#000000");
+        } else
+        {
+            selection.attr("cx", data.beads[b].x)
+                     .attr("cy", data.beads[b].y)
+        }
+    }
+}
 
-  var bead = svg.append("g")
-      .attr("class", "beads")
-    .selectAll("circle")
-    .data(graph.beads)
-    .enter()
-    .append("circle")
-      .attr("r", 10)
-      .attr("cx", function(d) { return (d.x); })
-      .attr("cy", function(d) { return (d.y); })
-      .attr("id", function(d) { return d.id+"_r"; } )
-      .attr("fill", "#000000");
+// ----------------- Sockets ------------------------
+// open the websocket for receiving the data
+const socket = new WebSocket('ws://localhost:8079');
 
-    //   var link = svg.selectAll("line")
-    // .data(graph.links)
-    // .enter()
-    // .append("line")
-    //   .attr("x1", function(l) {
-    //                             var source = d3.selectAll('#'+l.source+"_r");
-    //                             return source.attr("cx");
-    //                           })
-    //   .attr("y1", function(l) {
-    //                             var source = d3.selectAll('#'+l.source+"_r");
-    //                             return source.attr("cy");
-    //                           })
-    //   .attr("x2", function(l) {
-    //                             var target = d3.selectAll('#'+l.target+"_r");
-    //                             return target.attr("cx");
-    //                           })
-    //   .attr("y2", function(l) {
-    //                             var target = d3.selectAll('#'+l.target+"_r");
-    //                             return target.attr("cy");
-    //                           })
-    //   .style("stroke", "gray")
-    //   .style("stroke-width", "2");
+// grab data
+socket.onmessage = function (evt) {
+  var d = JSON.parse(evt.data);
+  // d3.selectAll("rect").attr("fill", "#000000");
+  updatePosition(d);
 
-    d3.selectAll(".beads").raise();
+}
 
-  // function updateHeat(id, v) {
-  //   d3.selectAll('#'+id+"_r")
-  //     .attr("fill", d3.interpolateRdYlGn(v*5));
-  // }
+// d3.json("data.json", function(error, graph) {
+//   if (error) throw error;
 
-  function updatePosition(data) {
-        svg.append("circle")
-        .attr("r", 10)
-        .attr("cx", function(d) { return (1000); })
-        .attr("cy", function(d) { return (1000); })
-        .attr("id", function(d) { return "test_r"; } )
-        .attr("fill", "#000000");
-    // for (var d in data) {
-    //    d3.selectAll('#' + d.id + "_r")
-    //       .attr("cx", function(d) { return (d.x); })
-    //       .attr("cy", function(d) { return (d.y); })
-    // }
-  }
+//   // var bead = svg.append("g")
+//   //     .attr("class", "beads")
+//   //   .selectAll("circle")
+//   //   .data(graph.beads)
+//   //   .enter()
+//   //   .append("circle")
+//   //     .attr("r", 10)
+//   //     .attr("cx", function(d) { return (d.x); })
+//   //     .attr("cy", function(d) { return (d.y); })
+//   //     .attr("id", function(d) { return d.id+"_r"; } )
+//       // .attr("fill", "#000000");
 
-  // ----------------- Sockets ------------------------
-  // open the websocket for receiving the data
-  const socket = new WebSocket('ws://localhost:8079');
+//     //   var link = svg.selectAll("line")
+//     // .data(graph.links)
+//     // .enter()
+//     // .append("line")
+//     //   .attr("x1", function(l) {
+//     //                             var source = d3.selectAll('#'+l.source+"_r");
+//     //                             return source.attr("cx");
+//     //                           })
+//     //   .attr("y1", function(l) {
+//     //                             var source = d3.selectAll('#'+l.source+"_r");
+//     //                             return source.attr("cy");
+//     //                           })
+//     //   .attr("x2", function(l) {
+//     //                             var target = d3.selectAll('#'+l.target+"_r");
+//     //                             return target.attr("cx");
+//     //                           })
+//     //   .attr("y2", function(l) {
+//     //                             var target = d3.selectAll('#'+l.target+"_r");
+//     //                             return target.attr("cy");
+//     //                           })
+//     //   .style("stroke", "gray")
+//     //   .style("stroke-width", "2");
 
-  // grab data
-  socket.onmessage = function (evt) {
-      var d = JSON.parse(evt.data);
-      updatePosition(d);
-  }
+//     d3.selectAll(".beads").raise();
 
-});
+//   // function updateHeat(id, v) {
+//   //   d3.selectAll('#'+id+"_r")
+//   //     .attr("fill", d3.interpolateRdYlGn(v*5));
+//   // }
+
+
+
+
+
+// });
 
 </script>
 
