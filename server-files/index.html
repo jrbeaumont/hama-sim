@@ -33,7 +33,7 @@ svg.append("rect")
 // var color = d3.scaleOrdinal(d3.schemeCategory20);
 
 function update(data) {
-
+    var c = 0;
     // console.log(data.volume[0].length != undefined)
     if (data.hasOwnProperty('volume')) {
       svg.attr("width", data.volume[0].length)
@@ -52,15 +52,22 @@ function update(data) {
     } else {
       d3.selectAll("circle").remove()
       for (var b in data.beads) {
-          svg.attr("class", "beads")
+          var circle = svg.attr("class", "beads")
               .append("circle")
               .attr("r", 10)
               .attr("cx", data.beads[b].x)
               .attr("cy", data.beads[b].y)
               .attr("id", data.beads[b].id)
-              .attr("fill", "#000000");
+
+          if (data.beads[b].type == "A") {
+            circle.attr("fill", "#ff0000");
+            c++;
+          } else {
+            circle.attr("fill", "#000000");
+          }
       }
     }
+    console.log(c);
 }
 
 // ----------------- Sockets ------------------------

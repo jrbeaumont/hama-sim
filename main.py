@@ -32,12 +32,13 @@ class Volume:
     noOfCubes = length ** dimensions
     beads = numberOfBeads
     cubes = []
+    special = False
 
     def __init__ (self):
         for i in range(0, cubesInVolLength):
             l = []
             for j in range(0, cubesInVolLength):
-                newCube = Cube(i, j, 10)
+                newCube = Cube(i, j, 100, self.special)
                 l.append(newCube);
             self.cubes.append(l)
 
@@ -50,7 +51,7 @@ class Cube:
     arrayPosY = 0
     beads = []
 
-    def __init__ (self, x, y, noOfBeads):
+    def __init__ (self, x, y, noOfBeads, special):
         self.beads = []
         self.arrayPosX = x
         self.arrayPosY = y
@@ -59,7 +60,12 @@ class Cube:
             rng = random.SystemRandom()
             randX = rng.randint(self.originCoord.x, (self.originCoord.x + (self.length - 1)))
             randY = rng.randint(self.originCoord.y, (self.originCoord.y + (self.length - 1)))
-            newBead = Bead(self, Coordinate(x = randX, y = randY))
+            if special == False:
+                newBead = Bead(self, Coordinate(x = randX, y = randY), "A")
+                # print("Setting bead to special");
+                special = True
+            else:
+                newBead = Bead(self, Coordinate(x = randX, y = randY), "B")
             self.beads.append(newBead)
 
     def passBead(self, bead):
@@ -93,6 +99,8 @@ class Cube:
             bead.globalCoord.y = y
             bead.parent = v.cubes[newParentX][newParentY]
             v.cubes[newParentX][newParentY].beads.append(bead)
+            # if (bead.beadType == "A"):
+                # print("A special bead is moving")
 
     def remove(self, bead):
         for b in self.beads:
@@ -103,10 +111,12 @@ class Cube:
 class Bead:
     container = None
     globalCoord = Coordinate(x = 0, y = 0)
+    beadType = "B";
 
-    def __init__(self, creator, coord):
+    def __init__(self, creator, coord, beadType):
         self.container = creator
         self.globalCoord = coord
+        self.beadType = beadType
 
     def move(self, dx, dy):
         newX = self.globalCoord.x + dx
@@ -115,14 +125,12 @@ class Bead:
 
 
 def passBeads(volume):
-    c = 0
     for i in range(0, cubesInVolLength):
         for j in range(0, cubesInVolLength):
             cube = volume.cubes[i][j]
             beads = cube.beads
             for b in beads:
                 cube.passBead(b)
-                c = c + 1
 
 def updateBeadVisualisation(volume):
     o = "{\n"
@@ -133,8 +141,11 @@ def updateBeadVisualisation(volume):
             c = 0
             for b in volume.cubes[i][j].beads:
                 o+="\t\t{\"id\": \"bead_" + str(c) + "_in_" + str(i) + "_" + str(j) + "\", "
-                c+=1
-                o+="\"x\": " + str(b.globalCoord.x) + ", \"y\": " + str(b.globalCoord.y) + "},\n"
+                o+="\"x\": " + str(b.globalCoord.x) + ", \"y\": " + str(b.globalCoord.y) + ", "
+                o+= "\"type\": \"" + b.beadType + "\"},"
+                o+="\n"
+                c += 1
+
     o = o[:-2]
     o+="\n\t]\n"
     o+= '}\n'
@@ -169,10 +180,12 @@ def updatePosition(volume):
         for j in range(0, cubesInVolLength):
             for b in volume.cubes[i][j].beads:
                 rng = random.SystemRandom()
-                b.move(rng.randint(-50, 50), rng.randint(-50, 50))
+                b.move(rng.randint(-100, 100), rng.randint(-100, 100))
+
 
 v = Volume()
 
+specialSet = False
 if (visualise):
     prepareVisualisation(v)
 
