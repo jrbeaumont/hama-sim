@@ -23,7 +23,7 @@ var path = require('path');
 const wss = new WebSocket.Server({port: 8079});
 
 // send flash to the rendered instance
-function updatePosition(wss, json) {
+function update(wss, json) {
     // https://github.com/websockets/ws#simple-server
     wss.clients.forEach(function each(client) {
         if(client !== wss && client.readyState == WebSocket.OPEN) {
@@ -33,21 +33,29 @@ function updatePosition(wss, json) {
 }
 
 inputChunks = [];
+svgSize = [];
+lines = [];
 // get stdin data which will be passed to the rendered graph
 // this will be the output of the executive
 r1.on('line', function(line) {
   inputChunks += line;
   if (line == "}") {
-    updatePosition(wss, inputChunks);
-    // var d = JSON.parse(inputChunks);
-    // for (var b in d.beads)
-    // {
-    //     console.log(d.beads[b].id);
-    // }
+    var d = JSON.parse(inputChunks);
+    if (d.hasOwnProperty('volume')) {
+      svgSize = inputChunks;
+    } else if (d.hasOwnProperty('lines')) {
+      lines = inputChunks;
+    } else {
+      update(wss, inputChunks);
+    }
     inputChunks = [];
   }
 });
 
+wss.on('connection', function() {
+  update(wss, svgSize);
+  update(wss, lines);
+});
 // stdin.on('data', function (chunk) {
 //     inputChunks += chunk;
 //     update(wss, inputChunks);

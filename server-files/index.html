@@ -32,23 +32,34 @@ svg.append("rect")
 
 // var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-function updatePosition(data) {
-    for (var b in data.beads) {
-        var selection = d3.selectAll("circle#" + data.beads[b].id);
-        if (selection.empty())
-        {
-            svg.attr("class", "beads")
-                .append("circle")
-                .attr("r", 10)
-                .attr("cx", data.beads[b].x)
-                .attr("cy", data.beads[b].y)
-                .attr("id", data.beads[b].id)
-                .attr("fill", "#000000");
-        } else
-        {
-            selection.attr("cx", data.beads[b].x)
-                     .attr("cy", data.beads[b].y)
-        }
+function update(data) {
+
+    // console.log(data.volume[0].length != undefined)
+    if (data.hasOwnProperty('volume')) {
+      svg.attr("width", data.volume[0].length)
+         .attr("height", data.volume[0].length);
+    } else if (data.hasOwnProperty('lines')) {
+      for (l in data.lines) {
+        svg.attr("class", "lines")
+           .append("line")
+           .attr("x1", data.lines[l].x1)
+           .attr("y1", data.lines[l].y1)
+           .attr("x2", data.lines[l].x2)
+           .attr("y2", data.lines[l].y2)
+           .style("stroke", "gray")
+           .style("stroke-width", "2");
+      }
+    } else {
+      d3.selectAll("circle").remove()
+      for (var b in data.beads) {
+          svg.attr("class", "beads")
+              .append("circle")
+              .attr("r", 10)
+              .attr("cx", data.beads[b].x)
+              .attr("cy", data.beads[b].y)
+              .attr("id", data.beads[b].id)
+              .attr("fill", "#000000");
+      }
     }
 }
 
@@ -60,8 +71,7 @@ const socket = new WebSocket('ws://localhost:8079');
 socket.onmessage = function (evt) {
   var d = JSON.parse(evt.data);
   // d3.selectAll("rect").attr("fill", "#000000");
-  updatePosition(d);
-
+  update(d);
 }
 
 // d3.json("data.json", function(error, graph) {

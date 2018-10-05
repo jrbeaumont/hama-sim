@@ -24,6 +24,7 @@ cubeLength = 1000 # Number of pixels in each sub-cube
 dimensions = 2 # Can be 2 or 3, for 2D or 3D
 numberOfBeads = 160 # Total number of beads in the system
 visualise = True
+cubeLines = True
 
 class Volume:
     volume = (cubeLength * cubesInVolLength) ** dimensions
@@ -36,7 +37,7 @@ class Volume:
         for i in range(0, cubesInVolLength):
             l = []
             for j in range(0, cubesInVolLength):
-                newCube = Cube(Coordinate(x = (i * cubeLength), y = (j * cubeLength)), 10)
+                newCube = Cube(i, j, 10)
                 l.append(newCube);
             self.cubes.append(l)
 
@@ -45,26 +46,85 @@ class Cube:
     volume = length ** dimensions
     noOfBeads = 0
     originCoord = Coordinate(x = 0, y = 0)
+    arrayPosX = 0
+    arrayPosY = 0
     beads = []
 
-    def __init__ (self, coord, noOfBeads):
+    def __init__ (self, x, y, noOfBeads):
         self.beads = []
-        self.originCoord = coord
+        self.arrayPosX = x
+        self.arrayPosY = y
+        self.originCoord = Coordinate(x = (x * cubeLength), y = (y * cubeLength))
         for i in range(0, noOfBeads):
             rng = random.SystemRandom()
             randX = rng.randint(self.originCoord.x, (self.originCoord.x + (self.length - 1)))
             randY = rng.randint(self.originCoord.y, (self.originCoord.y + (self.length - 1)))
-            newBead = Bead(Coordinate(x = randX, y = randY))
+            newBead = Bead(self, Coordinate(x = randX, y = randY))
             self.beads.append(newBead)
-        # print("Cube x: ", self.originCoord.x, " y: ", self.originCoord.y, " has beads: ", self.beads, "\n")
+
+    def passBead(self, bead):
+        x = bead.globalCoord.x
+        y = bead.globalCoord.y
+        newParentX = self.arrayPosX
+        newParentY = self.arrayPosY
+        if (x >= self.originCoord.x + self.length):
+            newParentX = self.arrayPosX + 1
+            if (newParentX >= cubesInVolLength):
+                newParentX = 0
+                x = x - (cubesInVolLength * self.length)
+        if (x < self.originCoord.x):
+            newParentX = self.arrayPosX - 1
+            if (newParentX < 0):
+                newParentX = cubesInVolLength - 1;
+                x = x + (cubesInVolLength * self.length)
+        if (y >= self.originCoord.y + self.length):
+            newParentY = self.arrayPosY + 1
+            if (newParentY >= cubesInVolLength):
+                newParentY = 0
+                y = y - (cubesInVolLength * self.length)
+        if (y < self.originCoord.y):
+            newParentY = self.arrayPosY - 1
+            if (newParentY < 0):
+                newParentY = cubesInVolLength - 1;
+                y = y + (cubesInVolLength * self.length)
+        if (newParentX != self.arrayPosX or newParentY != self.arrayPosY):
+            self.remove(bead)
+            bead.globalCoord.x = x
+            bead.globalCoord.y = y
+            bead.parent = v.cubes[newParentX][newParentY]
+            v.cubes[newParentX][newParentY].beads.append(bead)
+
+    def remove(self, bead):
+        for b in self.beads:
+            if bead.globalCoord.x == b.globalCoord.x and bead.globalCoord.y == b.globalCoord.y:
+                self.beads.remove(b)
+                return
 
 class Bead:
+    container = None
     globalCoord = Coordinate(x = 0, y = 0)
 
-    def __init__(self, coord):
+    def __init__(self, creator, coord):
+        self.container = creator
         self.globalCoord = coord
 
-def generate_d3_json_data(volume):
+    def move(self, dx, dy):
+        newX = self.globalCoord.x + dx
+        newY = self.globalCoord.y + dy
+        self.globalCoord = Coordinate(x = self.globalCoord.x + dx, y = self.globalCoord.y + dy)
+
+
+def passBeads(volume):
+    c = 0
+    for i in range(0, cubesInVolLength):
+        for j in range(0, cubesInVolLength):
+            cube = volume.cubes[i][j]
+            beads = cube.beads
+            for b in beads:
+                cube.passBead(b)
+                c = c + 1
+
+def updateBeadVisualisation(volume):
     o = "{\n"
     o+= "\t\"beads\": [\n"
     beads = []
@@ -76,7 +136,30 @@ def generate_d3_json_data(volume):
                 c+=1
                 o+="\"x\": " + str(b.globalCoord.x) + ", \"y\": " + str(b.globalCoord.y) + "},\n"
     o = o[:-2]
+    o+="\n\t]\n"
+    o+= '}\n'
+    print(o)
+    sys.stdout.flush()
+
+def prepareVisualisation(volume):
+    o = "{\n"
+    o+= "\t\"volume\": [\n"
+    o+="\t\t{\"length\": " + str(volume.length) + "}\n"
     o+="\t]\n"
+    o+= '}\n'
+    print(o)
+    sys.stdout.flush()
+
+def prepareCubeLines(volume):
+    o = "{\n"
+    o+= "\t\"lines\": [\n"
+    for i in range(1, cubesInVolLength):
+        staticPos = i * cubeLength;
+        maxVal = cubeLength * cubesInVolLength;
+        o+="\t\t{\"x1\": " + str(staticPos) + ", \"y1\": 0, \"x2\": " + str(staticPos) + ", \"y2\": " + str(maxVal)+ "},\n"
+        o+="\t\t{\"x1\": 0" + ", \"y1\": " + str(staticPos) + ", \"x2\": " + str(maxVal) + ", \"y2\": " + str(staticPos)+ "},\n"
+    o = o[:-2]
+    o+="\n\t]\n"
     o+= '}\n'
     print(o)
     sys.stdout.flush()
@@ -85,12 +168,20 @@ def updatePosition(volume):
     for i in range(0, cubesInVolLength):
         for j in range(0, cubesInVolLength):
             for b in volume.cubes[i][j].beads:
-                b.globalCoord = Coordinate(x = b.globalCoord.x + 10, y = b.globalCoord.y)
+                rng = random.SystemRandom()
+                b.move(rng.randint(-50, 50), rng.randint(-50, 50))
 
 v = Volume()
 
-for x in range(0,1000):
+if (visualise):
+    prepareVisualisation(v)
+
+if (cubeLines):
+    prepareCubeLines(v)
+
+while True:
     if (visualise):
-        generate_d3_json_data(v)
+        updateBeadVisualisation(v)
     updatePosition(v)
+    passBeads(v)
     time.sleep(0.01)
