@@ -35,6 +35,7 @@ function update(wss, json) {
 inputChunks = [];
 svgSize = [];
 lines = [];
+beadTypes = [];
 // get stdin data which will be passed to the rendered graph
 // this will be the output of the executive
 r1.on('line', function(line) {
@@ -43,6 +44,8 @@ r1.on('line', function(line) {
     var d = JSON.parse(inputChunks);
     if (d.hasOwnProperty('volume')) {
       svgSize = inputChunks;
+    } else if (d.hasOwnProperty('beadType')) {
+      beadTypes = inputChunks;
     } else if (d.hasOwnProperty('lines')) {
       lines = inputChunks;
     } else {
@@ -54,6 +57,7 @@ r1.on('line', function(line) {
 
 wss.on('connection', function() {
   update(wss, svgSize);
+  update(wss, beadTypes);
   update(wss, lines);
 });
 // stdin.on('data', function (chunk) {

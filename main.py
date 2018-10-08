@@ -1,134 +1,19 @@
 #!/usr/bin/env python3
 
-# import "src/Containers.py"
-
-# from graph.core import *
-
-# from graph.load_xml import load_graph_types_and_instances
-# from graph.save_xml_stream import save_graph
 import sys
 import time
 import math
-# import csv
-
 from coordinates import Coordinate
-
-
 import os
-# appBase=os.path.dirname(os.path.realpath(__file__))
-
-# sys.path.append("src")
-
 from src.Containers import *
-
-# src=appBase+"/clock_tree_graph_type.xml"
-# src=appBase+"/clock_tree_single_handlers_graph_type.xml"
-# (graphTypes,graphInstances)=load_graph_types_and_instances(src,src)
+from src.Beads import *
 
 cubesInVolLength = 4 # Number of squares in legnth, width and depth (square/cube required)
-cubeLength = 1000 # Number of pixels in each sub-cube
+cubeLength = 100 # Number of pixels in each sub-cube
 dimensions = 2 # Can be 2 or 3, for 2D or 3D
 numberOfBeads = 160 # Total number of beads in the system
 visualise = True
 cubeLines = True
-
-# class Container:
-#     volume = (cubeLength * cubesInVolLength) ** dimensions
-#     length = cubesInVolLength * cubeLength
-#     noOfCubes = length ** dimensions
-#     beads = numberOfBeads
-#     cubes = []
-#     special = False
-
-#     def __init__ (self):
-#         for i in range(0, cubesInVolLength):
-#             l = []
-#             for j in range(0, cubesInVolLength):
-#                 newCube = Cube(i, j, 100, self.special)
-#                 l.append(newCube);
-#             self.cubes.append(l)
-
-# class Cube:
-#     length = cubeLength
-#     volume = length ** dimensions
-#     noOfBeads = 0
-#     originCoord = Coordinate(x = 0, y = 0)
-#     arrayPosX = 0
-#     arrayPosY = 0
-#     beads = []
-
-#     def __init__ (self, x, y, noOfBeads, special):
-#         self.beads = []
-#         self.arrayPosX = x
-#         self.arrayPosY = y
-#         self.originCoord = Coordinate(x = (x * cubeLength), y = (y * cubeLength))
-#         for i in range(0, noOfBeads):
-#             rng = random.SystemRandom()
-#             randX = rng.randint(self.originCoord.x, (self.originCoord.x + (self.length - 1)))
-#             randY = rng.randint(self.originCoord.y, (self.originCoord.y + (self.length - 1)))
-#             if special == False:
-#                 newBead = Bead(self, Coordinate(x = randX, y = randY), "A")
-#                 # print("Setting bead to special");
-#                 special = True
-#             else:
-#                 newBead = Bead(self, Coordinate(x = randX, y = randY), "B")
-#             self.beads.append(newBead)
-
-#     def passBead(self, bead):
-#         x = bead.globalCoord.x
-#         y = bead.globalCoord.y
-#         newParentX = self.arrayPosX
-#         newParentY = self.arrayPosY
-#         if (x >= self.originCoord.x + self.length):
-#             newParentX = self.arrayPosX + 1
-#             if (newParentX >= cubesInVolLength):
-#                 newParentX = 0
-#                 x = x - (cubesInVolLength * self.length)
-#         if (x < self.originCoord.x):
-#             newParentX = self.arrayPosX - 1
-#             if (newParentX < 0):
-#                 newParentX = cubesInVolLength - 1;
-#                 x = x + (cubesInVolLength * self.length)
-#         if (y >= self.originCoord.y + self.length):
-#             newParentY = self.arrayPosY + 1
-#             if (newParentY >= cubesInVolLength):
-#                 newParentY = 0
-#                 y = y - (cubesInVolLength * self.length)
-#         if (y < self.originCoord.y):
-#             newParentY = self.arrayPosY - 1
-#             if (newParentY < 0):
-#                 newParentY = cubesInVolLength - 1;
-#                 y = y + (cubesInVolLength * self.length)
-#         if (newParentX != self.arrayPosX or newParentY != self.arrayPosY):
-#             self.remove(bead)
-#             bead.globalCoord.x = x
-#             bead.globalCoord.y = y
-#             bead.parent = v.cubes[newParentX][newParentY]
-#             v.cubes[newParentX][newParentY].beads.append(bead)
-#             # if (bead.beadType == "A"):
-#                 # print("A special bead is moving")
-
-#     def remove(self, bead):
-#         for b in self.beads:
-#             if bead.globalCoord.x == b.globalCoord.x and bead.globalCoord.y == b.globalCoord.y:
-#                 self.beads.remove(b)
-#                 return
-
-# class Bead:
-#     container = None
-#     globalCoord = Coordinate(x = 0, y = 0)
-#     beadType = "B";
-
-#     def __init__(self, creator, coord, beadType):
-#         self.container = creator
-#         self.globalCoord = coord
-#         self.beadType = beadType
-
-#     def move(self, dx, dy):
-#         newX = self.globalCoord.x + dx
-#         newY = self.globalCoord.y + dy
-#         self.globalCoord = Coordinate(x = self.globalCoord.x + dx, y = self.globalCoord.y + dy)
-
 
 def passBeads(volume):
     for i in range(0, cubesInVolLength):
@@ -147,11 +32,10 @@ def updateBeadVisualisation(volume):
             c = 0
             for b in volume.cubes[i][j].beads:
                 o+="\t\t{\"id\": \"bead_" + str(c) + "_in_" + str(i) + "_" + str(j) + "\", "
-                o+="\"x\": " + str(b.globalCoord.x) + ", \"y\": " + str(b.globalCoord.y) + ", "
-                o+= "\"type\": \"" + b.beadType + "\"},"
+                o+="\"x\": " + str(b.position.x) + ", \"y\": " + str(b.position.y) + ", "
+                o+= "\"type\": \"" + b.typeName + "\"},"
                 o+="\n"
                 c += 1
-
     o = o[:-2]
     o+="\n\t]\n"
     o+= '}\n'
@@ -165,6 +49,16 @@ def prepareVisualisation(volume):
     o+="\t]\n"
     o+= '}\n'
     print(o)
+    sys.stdout.flush()
+    beadTypes = allBeadTypes()
+    p = "{\n"
+    p+= "\t\"beadType\": [\n"
+    for t in beadTypes:
+        p+="\t\t{\"name\": \"" + str(t[0]) + "\", \"colour\": \"" + str(t[1]) + "\"},\n"
+    p = p[:-2]
+    p+="\n\t]\n"
+    p+= '}\n'
+    print(p)
     sys.stdout.flush()
 
 def prepareCubeLines(volume):
@@ -186,7 +80,27 @@ def updatePosition(volume):
         for j in range(0, cubesInVolLength):
             for b in volume.cubes[i][j].beads:
                 rng = random.SystemRandom()
-                b.move(rng.randint(-100, 100), rng.randint(-100, 100))
+                b.move(rng.randint(-10, 10), rng.randint(-10, 10))
+
+def moveBeads(volume):
+    for i in range(0, cubesInVolLength):
+        for j in range(0, cubesInVolLength):
+            for b in volume.cubes[i][j].beads:
+                for v in b.conservativeForce:
+                    Fc = Vector(0.0, 0.0)
+                    if (v != None):
+                        Fc = Vector.add(Fc, v)
+                b.conservativeForce = []
+                print("x: " + str(Fc.x) + ", y: " + str(Fc.y))
+
+def performLocalCalculations(volume):
+    for i in range(0, cubesInVolLength):
+        for j in range(0, cubesInVolLength):
+            for b1 in volume.cubes[i][j].beads:
+                for b2 in volume.cubes[i][j].beads:
+                    if (b1 != b2):
+                        b1.conservativeForce.append(conservativeForce(b1, b2))
+                        # print(b1.conservativeForce)
 
 v = Container(cubesInVolLength, cubeLength, dimensions, numberOfBeads)
 
@@ -200,6 +114,8 @@ if (cubeLines):
 while True:
     if (visualise):
         updateBeadVisualisation(v)
+    # performLocalCalculations(v)
+    # moveBeads(v)
     updatePosition(v)
     passBeads(v)
-    time.sleep(1)
+    time.sleep(0.01)

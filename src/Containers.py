@@ -1,6 +1,6 @@
-
 from coordinates import Coordinate
 import random
+from src.Beads import *
 
 class Container:
     lengthInCubes = 0 # Number of squares in legnth, width and depth (square/cube required)
@@ -26,7 +26,7 @@ class Container:
         for i in range(0, cubesInVolLength):
             l = []
             for j in range(0, cubesInVolLength):
-                newCube = Cube(i, j, self.cubeLength, 100, self.special, self)
+                newCube = Cube(i, j, self.cubeLength, 10, self.special, self)
                 l.append(newCube);
             self.cubes.append(l)
 
@@ -38,6 +38,8 @@ class Cube:
     arrayPosX = 0
     arrayPosY = 0
     beads = []
+
+    last = None
 
     def __init__ (self, x, y, cubeLength, noOfBeads, special, container):
         self.length = cubeLength
@@ -51,16 +53,19 @@ class Cube:
             randX = rng.randint(self.originCoord.x, (self.originCoord.x + (self.length - 1)))
             randY = rng.randint(self.originCoord.y, (self.originCoord.y + (self.length - 1)))
             if special == False:
-                newBead = Bead(self, Coordinate(x = randX, y = randY), "A")
+                newBead = BeadA(self, Coordinate(x = randX, y = randY))
                 special = True
             else:
-                newBead = Bead(self, Coordinate(x = randX, y = randY), "B")
+                newBead = BeadB(self, Coordinate(x = randX, y = randY))
             self.beads.append(newBead)
+            if (self.last != None):
+                euclidianDistance(self.last.position, newBead.position)
+            self.last = newBead;
 
     def passBead(self, bead):
         cubesInVolLength = self.container.lengthInCubes
-        x = bead.globalCoord.x
-        y = bead.globalCoord.y
+        x = bead.position.x
+        y = bead.position.y
         newParentX = self.arrayPosX
         newParentY = self.arrayPosY
         if (x >= self.originCoord.x + self.length):
@@ -85,8 +90,8 @@ class Cube:
                 y = y + (cubesInVolLength * self.length)
         if (newParentX != self.arrayPosX or newParentY != self.arrayPosY):
             self.remove(bead)
-            bead.globalCoord.x = x
-            bead.globalCoord.y = y
+            bead.position.x = x
+            bead.position.y = y
             bead.parent = self.container.cubes[newParentX][newParentY]
             self.container.cubes[newParentX][newParentY].beads.append(bead)
             # if (bead.beadType == "A"):
@@ -94,21 +99,6 @@ class Cube:
 
     def remove(self, bead):
         for b in self.beads:
-            if bead.globalCoord.x == b.globalCoord.x and bead.globalCoord.y == b.globalCoord.y:
+            if bead.position.x == b.position.x and bead.position.y == b.position.y:
                 self.beads.remove(b)
                 return
-
-class Bead:
-    container = None
-    globalCoord = Coordinate(x = 0, y = 0)
-    beadType = "B";
-
-    def __init__(self, creator, coord, beadType):
-        self.container = creator
-        self.globalCoord = coord
-        self.beadType = beadType
-
-    def move(self, dx, dy):
-        newX = self.globalCoord.x + dx
-        newY = self.globalCoord.y + dy
-        self.globalCoord = Coordinate(x = self.globalCoord.x + dx, y = self.globalCoord.y + dy)

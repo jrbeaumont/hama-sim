@@ -31,6 +31,8 @@ svg.append("rect")
    .attr("fill", "#dddddd");
 
 // var color = d3.scaleOrdinal(d3.schemeCategory20);
+var typeNames = []
+var colours = []
 
 function update(data) {
     var c = 0;
@@ -38,6 +40,13 @@ function update(data) {
     if (data.hasOwnProperty('volume')) {
       svg.attr("width", data.volume[0].length)
          .attr("height", data.volume[0].length);
+    } else if (data.hasOwnProperty('beadType')) {
+      for (var b in data.beadType) {
+        typeNames[b] = data.beadType[b].name;
+        colours[b] = data.beadType[b].colour;
+      }
+      console.log(typeNames);
+      console.log(colours);
     } else if (data.hasOwnProperty('lines')) {
       for (l in data.lines) {
         svg.attr("class", "lines")
@@ -54,17 +63,19 @@ function update(data) {
       for (var b in data.beads) {
           var circle = svg.attr("class", "beads")
               .append("circle")
-              .attr("r", 10)
+              .attr("r", 2)
               .attr("cx", data.beads[b].x)
               .attr("cy", data.beads[b].y)
               .attr("id", data.beads[b].id)
+              .attr("fill", colours[typeNames.indexOf(data.beads[b].type)])
 
-          if (data.beads[b].type == "A") {
-            circle.attr("fill", "#ff0000");
-            c++;
-          } else {
-            circle.attr("fill", "#000000");
-          }
+          // circle.attr("fill")
+          // if (data.beads[b].type == "A") {
+          //   circle.attr("fill", "#ff0000");
+          //   c++;
+          // } else {
+          //   circle.attr("fill", "#000000");
+          // }
       }
     }
 }
