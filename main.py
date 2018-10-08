@@ -14,6 +14,7 @@ dimensions = 2 # Can be 2 or 3, for 2D or 3D
 numberOfBeads = 160 # Total number of beads in the system
 visualise = True
 cubeLines = True
+timestep = 0.01
 
 def passBeads(volume):
     for i in range(0, cubesInVolLength):
@@ -86,12 +87,15 @@ def moveBeads(volume):
     for i in range(0, cubesInVolLength):
         for j in range(0, cubesInVolLength):
             for b in volume.cubes[i][j].beads:
+                Fc = Vector(0.0, 0.0)
                 for v in b.conservativeForce:
-                    Fc = Vector(0.0, 0.0)
                     if (v != None):
                         Fc = Vector.add(Fc, v)
                 b.conservativeForce = []
-                print("x: " + str(Fc.x) + ", y: " + str(Fc.y))
+                Fc = Vector.divide(Fc, b.mass)
+                Fc = Vector.multiply(Fc, timestep)
+                b.velocity = Vector.add(b.velocity, Fc)
+                b.move(b.velocity.x * timestep, b.velocity.y * timestep)
 
 def performLocalCalculations(volume):
     for i in range(0, cubesInVolLength):
@@ -100,7 +104,6 @@ def performLocalCalculations(volume):
                 for b2 in volume.cubes[i][j].beads:
                     if (b1 != b2):
                         b1.conservativeForce.append(conservativeForce(b1, b2))
-                        # print(b1.conservativeForce)
 
 v = Container(cubesInVolLength, cubeLength, dimensions, numberOfBeads)
 
@@ -111,11 +114,18 @@ if (visualise):
 if (cubeLines):
     prepareCubeLines(v)
 
+# v.cubes[1][0].beads.append(BeadA(v.cubes[1][0], Coordinate(x = 150, y = 50)))
+# v.cubes[1][0].beads.append(BeadA(v.cubes[1][0], Coordinate(x = 155, y = 50)))
+v.cubes[1][1].beads.append(BeadB(v.cubes[1][1], Coordinate(x = 150, y = 150)))
+v.cubes[1][1].beads.append(BeadB(v.cubes[1][1], Coordinate(x = 155, y = 150)))
+# v.cubes[1][2].beads.append(BeadA(v.cubes[1][2], Coordinate(x = 150, y = 250)))
+# v.cubes[1][2].beads.append(BeadB(v.cubes[1][2], Coordinate(x = 155, y = 250)))
+
 while True:
     if (visualise):
         updateBeadVisualisation(v)
-    # performLocalCalculations(v)
-    # moveBeads(v)
-    updatePosition(v)
+    performLocalCalculations(v)
+    moveBeads(v)
+    # updatePosition(v)
     passBeads(v)
     time.sleep(0.01)

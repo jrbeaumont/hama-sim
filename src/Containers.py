@@ -26,7 +26,8 @@ class Container:
         for i in range(0, cubesInVolLength):
             l = []
             for j in range(0, cubesInVolLength):
-                newCube = Cube(i, j, self.cubeLength, 10, self.special, self)
+                # newCube = Cube(i, j, self.cubeLength, 10, self.special, self)
+                newCube = Cube(i, j, self.cubeLength, 0, self.special, self)
                 l.append(newCube);
             self.cubes.append(l)
 

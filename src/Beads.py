@@ -3,11 +3,11 @@ from src.Vectors import *
 import math
 
 interactionStrength = [
- #    A   B
+ #    A  B
  # A
-    [ 10, 20 ],
+    [ 1, 2 ],
  # B
-    [ 20, 30 ]
+    [ 2, 3 ]
 ]
 
 class Bead:
@@ -16,7 +16,7 @@ class Bead:
     velocity = Vector(0.0, 0.0);
     force = Vector(0.0, 0.0);
     mass = 0.0
-    cutoffRadius = 100.0
+    cutoffRadius = 20.0
     conservativeForce = []
     randomForce = []
     dragForce = []
@@ -67,3 +67,5 @@ def conservativeForce(i, j):
         result = intStrength * (1 - eucDistance/i.cutoffRadius)
         result = Vector.multiply(vectorDivide, result)
         return result
+
+# https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
