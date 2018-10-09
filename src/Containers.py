@@ -35,7 +35,7 @@ class Cube:
     container = None
     length = 0
     noOfBeads = 0
-    originCoord = Coordinate(x = 0, y = 0)
+    originCoord = Vector(0, 0)
     arrayPosX = 0
     arrayPosY = 0
     beads = []
@@ -47,17 +47,17 @@ class Cube:
         self.beads = []
         self.arrayPosX = x
         self.arrayPosY = y
-        self.originCoord = Coordinate(x = (x * cubeLength), y = (y * cubeLength))
+        self.originCoord = Vector((x * cubeLength), (y * cubeLength))
         self.container = container
         for i in range(0, noOfBeads):
             rng = random.SystemRandom()
             randX = rng.randint(self.originCoord.x, (self.originCoord.x + (self.length - 1)))
             randY = rng.randint(self.originCoord.y, (self.originCoord.y + (self.length - 1)))
             if special == False:
-                newBead = BeadA(self, Coordinate(x = randX, y = randY))
+                newBead = BeadA(self, Vector(randX, randY))
                 special = True
             else:
-                newBead = BeadB(self, Coordinate(x = randX, y = randY))
+                newBead = BeadB(self, Vector(randX, randY))
             self.beads.append(newBead)
             if (self.last != None):
                 euclidianDistance(self.last.position, newBead.position)

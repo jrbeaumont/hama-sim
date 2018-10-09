@@ -12,9 +12,9 @@ interactionStrength = [
 
 class Bead:
     container = None
-    position = Coordinate(x = 0, y = 0)
+    position = Vector(0.0, 0.0)
     velocity = Vector(0.0, 0.0);
-    force = Vector(0.0, 0.0);
+    acceleration = Vector(0.0, 0.0);
     mass = 0.0
     cutoffRadius = 20.0
     conservativeForce = []
@@ -28,7 +28,7 @@ class Bead:
     def move(self, dx, dy):
         newX = self.position.x + dx
         newY = self.position.y + dy
-        self.position = Coordinate(x = self.position.x + dx, y = self.position.y + dy)
+        self.position = Vector(self.position.x + dx, self.position.y + dy)
 
 class BeadA(Bead):
     typeName = "A"
@@ -58,10 +58,10 @@ def distanceVector(i, j):
     # zResult = i.z - j.z
     return Vector(xResult, yResult)
 
-def conservativeForce(i, j):
-    eucDistance = euclidianDistance(i.position, j.position)
+def conservativeForce(i, j, ipos, jpos):
+    eucDistance = euclidianDistance(ipos, jpos)
     if (eucDistance <= i.cutoffRadius):
-        vectorDistance = distanceVector(i.position, j.position)
+        vectorDistance = distanceVector(ipos, jpos)
         intStrength = interactionStrength[i.interactionIndex][i.interactionIndex]
         vectorDivide = Vector.divide(vectorDistance, eucDistance)
         result = intStrength * (1 - eucDistance/i.cutoffRadius)
