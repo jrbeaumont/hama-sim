@@ -36,7 +36,6 @@ var colours = []
 
 function update(data) {
     var c = 0;
-    // console.log(data.volume[0].length != undefined)
     if (data.hasOwnProperty('volume')) {
       svg.attr("width", data.volume[0].length)
          .attr("height", data.volume[0].length);
@@ -45,8 +44,6 @@ function update(data) {
         typeNames[b] = data.beadType[b].name;
         colours[b] = data.beadType[b].colour;
       }
-      console.log(typeNames);
-      console.log(colours);
     } else if (data.hasOwnProperty('lines')) {
       for (l in data.lines) {
         svg.attr("class", "lines")
@@ -59,23 +56,20 @@ function update(data) {
            .style("stroke-width", "2");
       }
     } else {
-      d3.selectAll("circle").remove()
       for (var b in data.beads) {
-          var circle = svg.attr("class", "beads")
-              .append("circle")
-              .attr("r", 2)
-              .attr("cx", data.beads[b].x)
-              .attr("cy", data.beads[b].y)
-              .attr("id", data.beads[b].id)
-              .attr("fill", colours[typeNames.indexOf(data.beads[b].type)])
-
-          // circle.attr("fill")
-          // if (data.beads[b].type == "A") {
-          //   circle.attr("fill", "#ff0000");
-          //   c++;
-          // } else {
-          //   circle.attr("fill", "#000000");
-          // }
+          var selection = d3.selectAll("#b_" + data.beads[b].id)
+          if (selection.empty()) {
+            svg.attr("class", "beads")
+                .append("circle")
+                .attr("r", 2)
+                .attr("cx", data.beads[b].x)
+                .attr("cy", data.beads[b].y)
+                .attr("id", "b_" + data.beads[b].id)
+                .attr("fill", colours[typeNames.indexOf(data.beads[b].type)]);
+          } else {
+            selection.attr("cx", data.beads[b].x)
+                .attr("cy", data.beads[b].y);
+          }
       }
     }
 }

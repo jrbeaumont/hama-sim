@@ -2,6 +2,8 @@ from coordinates import Coordinate
 import random
 from src.Beads import *
 
+coordinates = []
+
 class Container:
     lengthInCubes = 0 # Number of squares in legnth, width and depth (square/cube required)
     cubeLength = 0 # Number of pixels in each sub-cube
@@ -12,7 +14,7 @@ class Container:
     noOfCubes = length ** dimensions
     beads = numberOfBeads
     cubes = []
-    special = False
+    special = 0
 
     def __init__ (self, cubesInVolLength, cubeLength, dimensions, numberOfBeads):
         self.lengthInCubes = cubesInVolLength
@@ -43,6 +45,7 @@ class Cube:
     last = None
 
     def __init__ (self, x, y, cubeLength, noOfBeads, special, container):
+        global coordinates
         self.length = cubeLength
         self.beads = []
         self.arrayPosX = x
@@ -53,11 +56,12 @@ class Cube:
             rng = random.SystemRandom()
             randX = rng.randint(self.originCoord.x, (self.originCoord.x + (self.length - 1)))
             randY = rng.randint(self.originCoord.y, (self.originCoord.y + (self.length - 1)))
-            if special == False:
-                newBead = BeadA(self, Vector(randX, randY))
-                special = True
+            randVector = Vector(randX, randY)
+            if special < 4:
+                newBead = BeadA(self, randVector)
+                special += 1
             else:
-                newBead = BeadB(self, Vector(randX, randY))
+                newBead = BeadB(self, randVector)
             self.beads.append(newBead)
             if (self.last != None):
                 euclidianDistance(self.last.position, newBead.position)
@@ -95,8 +99,6 @@ class Cube:
             bead.position.y = y
             bead.container = self.container.cubes[newParentX][newParentY]
             self.container.cubes[newParentX][newParentY].beads.append(bead)
-            # if (bead.beadType == "A"):
-                # print("A special bead is moving")
 
     def remove(self, bead):
         for b in self.beads:
