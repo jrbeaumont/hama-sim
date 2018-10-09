@@ -9,13 +9,13 @@ from src.Containers import *
 from src.Beads import *
 
 cubesInVolLength = 4 # Number of squares in legnth, width and depth (square/cube required)
-cubeLength = 100 # Number of pixels in each sub-cube
+cubeLength = 50 # Number of pixels in each sub-cube
 dimensions = 2 # Can be 2 or 3, for 2D or 3D
 numberOfBeads = 160 # Total number of beads in the system
 visualise = True
 cubeLines = True
 firstCalc = True
-timestep = 0.001
+timestep = 0.01
 
 def passBeads(volume):
     for i in range(0, cubesInVolLength):
@@ -170,14 +170,14 @@ def moveBeads(volume):
 
 v = Container(cubesInVolLength, cubeLength, dimensions, numberOfBeads)
 
-v.cubes[0][2].beads.append(BeadA(v.cubes[2][0], Vector(97.5, 50)))
-v.cubes[3][0].beads.append(BeadA(v.cubes[3][0], Vector(102.5, 50)))
-v.cubes[1][1].beads.append(BeadB(v.cubes[1][1], Vector(197.5, 150)))
-v.cubes[2][1].beads.append(BeadB(v.cubes[2][1], Vector(202.5, 150)))
-v.cubes[3][2].beads.append(BeadA(v.cubes[3][2], Vector(397.5, 250)))
-v.cubes[0][2].beads.append(BeadB(v.cubes[0][2], Vector(2.5, 250)))
-v.cubes[3][2].beads.append(BeadA(v.cubes[3][2], Vector(345, 200)))
-v.cubes[3][2].beads.append(BeadB(v.cubes[3][2], Vector(355, 200)))
+# v.cubes[0][2].beads.append(BeadA(v.cubes[2][0], Vector(97.5, 50)))
+# v.cubes[3][0].beads.append(BeadA(v.cubes[3][0], Vector(102.5, 50)))
+# v.cubes[1][1].beads.append(BeadB(v.cubes[1][1], Vector(197.5, 150)))
+# v.cubes[2][1].beads.append(BeadB(v.cubes[2][1], Vector(202.5, 150)))
+# v.cubes[3][2].beads.append(BeadA(v.cubes[3][2], Vector(397.5, 250)))
+# v.cubes[0][2].beads.append(BeadB(v.cubes[0][2], Vector(2.5, 250)))
+# v.cubes[3][2].beads.append(BeadA(v.cubes[3][2], Vector(345, 200)))
+# v.cubes[3][2].beads.append(BeadB(v.cubes[3][2], Vector(355, 200)))
 
 # v.cubes[1][2].beads.append(BeadA(v.cubes[1][2], Vector(195, 205)))
 # v.cubes[2][1].beads.append(BeadB(v.cubes[2][1], Vector(205, 195)))
@@ -197,5 +197,5 @@ while True:
     moveBeads(v)
     # updatePosition(v) # Randomly move beads (no calculations involved)
     passBeads(v)
-    time.sleep(0.0001)
+    time.sleep(0.001)
     # time.sleep(5)

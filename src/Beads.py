@@ -6,9 +6,9 @@ import random
 interactionStrength = [
  #    A  B
  # A
-    [ 20, 60 ],
+    [ 40, 120 ],
  # B
-    [ 60, 40 ]
+    [ 120, 80 ]
 ]
 stochasticConstant = 2.5
 dragCoefficient = 1.5

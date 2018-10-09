@@ -28,8 +28,8 @@ class Container:
         for i in range(0, cubesInVolLength):
             l = []
             for j in range(0, cubesInVolLength):
-                # newCube = Cube(i, j, self.cubeLength, 10, self.special, self)
-                newCube = Cube(i, j, self.cubeLength, 0, self.special, self)
+                newCube = Cube(i, j, self.cubeLength, 10, self.special, self)
+                # newCube = Cube(i, j, self.cubeLength, 0, self.special, self)
                 l.append(newCube);
             self.cubes.append(l)
 
@@ -58,7 +58,7 @@ class Cube:
             randY = rng.randint(self.originCoord.y, (self.originCoord.y + (self.length - 1)))
             randVector = Vector(randX, randY)
             if special < 4:
-                newBead = BeadA(self, randVector)
+                newBead = BeadB(self, randVector)
                 special += 1
             else:
                 newBead = BeadB(self, randVector)
