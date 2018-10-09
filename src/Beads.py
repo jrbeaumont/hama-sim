@@ -5,9 +5,9 @@ import math
 interactionStrength = [
  #    A  B
  # A
-    [ 1, 2 ],
+    [ 2, 6 ],
  # B
-    [ 2, 3 ]
+    [ 6, 4 ]
 ]
 
 class Bead:
@@ -17,9 +17,10 @@ class Bead:
     acceleration = Vector(0.0, 0.0);
     mass = 0.0
     cutoffRadius = 20.0
-    conservativeForce = []
+    conForce = []
     randomForce = []
     dragForce = []
+    xStep = Vector(0.0, 0.0)
 
     def __init__(self, creator, coord):
         self.container = creator
@@ -60,12 +61,12 @@ def distanceVector(i, j):
 
 def conservativeForce(i, j, ipos, jpos):
     eucDistance = euclidianDistance(ipos, jpos)
+    # print("Euclidian distance = " + str(eucDistance))
     if (eucDistance <= i.cutoffRadius):
         vectorDistance = distanceVector(ipos, jpos)
         intStrength = interactionStrength[i.interactionIndex][i.interactionIndex]
         vectorDivide = Vector.divide(vectorDistance, eucDistance)
-        result = intStrength * (1 - eucDistance/i.cutoffRadius)
+        result = intStrength * (1 - (eucDistance/i.cutoffRadius))
         result = Vector.multiply(vectorDivide, result)
         return result
 
-# https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet

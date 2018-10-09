@@ -93,7 +93,7 @@ class Cube:
             self.remove(bead)
             bead.position.x = x
             bead.position.y = y
-            bead.parent = self.container.cubes[newParentX][newParentY]
+            bead.container = self.container.cubes[newParentX][newParentY]
             self.container.cubes[newParentX][newParentY].beads.append(bead)
             # if (bead.beadType == "A"):
                 # print("A special bead is moving")

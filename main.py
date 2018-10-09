@@ -15,7 +15,7 @@ numberOfBeads = 160 # Total number of beads in the system
 visualise = True
 cubeLines = True
 firstCalc = True
-timestep = 1
+timestep = 0.01
 
 def passBeads(volume):
     for i in range(0, cubesInVolLength):
@@ -62,6 +62,7 @@ def prepareVisualisation(volume):
     p+= '}\n'
     print(p)
     sys.stdout.flush()
+    updateBeadVisualisation(volume)
 
 def prepareCubeLines(volume):
     o = "{\n"
@@ -91,11 +92,13 @@ def performCalculations(volume):
             for b in volume.cubes[i][j].beads:
                 if (firstCalc):
                     f = Vector(0.0, 0.0)
+                    b.xStep = b.position
                     performLocalCalculations(b, b.container)
-                    for v in b.conservativeForce:
+                    performNeighbourhoodCalculations(volume, b, i, j)
+                    for v in b.conForce:
                         if (v != None):
                             f = Vector.add(f, v)
-                    b.conservativeForce = []
+                    b.conForce = []
                     b.acceleration = Vector.divide(f, b.mass)
                     f = Vector.multiply(b.acceleration, timestep)
                     b.velocity = Vector.add(b.velocity, f)
@@ -104,43 +107,103 @@ def performCalculations(volume):
                     b.move(diffX, diffY)
                 else:
                     vHalfStep = Vector.add(b.velocity, Vector.multiply(Vector.divide(b.acceleration, 2), timestep))
+                    # print("vHalfStep: x = " + str(vHalfStep.x) + ", y = " + str(vHalfStep.y))
                     b.xStep = Vector.add(b.position, Vector.multiply(vHalfStep, timestep))
+                    # print("b.xStep: x = " + str(b.xStep.x) + ", y = " + str(b.xStep.y))
                     performLocalCalculations(b, b.container)
+                    performNeighbourhoodCalculations(volume, b, i, j)
                     f = Vector(0.0, 0.0)
-                    for v in b.conservativeForce:
+                    for v in b.conForce:
                         if (v != None):
                             f = Vector.add(f, v)
-                    b.conservativeForce = []
+                    b.conForce = []
                     b.acceleration = Vector.divide(f, b.mass)
+                    # print("b.acceleration: x = " + str(b.acceleration.x) + ", y = " + str(b.acceleration.y))
                     b.velocity = Vector.add(vHalfStep, Vector.divide(Vector.multiply(b.acceleration, timestep), 2))
+                    # b.position = b.xStep
     firstCalc = False
 
 def performLocalCalculations(b1, cube):
     for b2 in cube.beads:
         if (b1 != b2):
-            b1.conservativeForce.append(conservativeForce(b1, b2, b1.position, b2.position))
+            b1.conForce.append(conservativeForce(b1, b2, b1.xStep, b2.position))
+
+def performNeighbourhoodCalculations(volume, b, x, y):
+    # print("INPUT X = " + str(x))
+    # print("INPUT Y = " + str(y))
+    tmpXStep = Vector(b.xStep.x, b.xStep.y)
+    # print("ORIGINAL COORDINATE X = " + str(tmpXStep.x) + ", Y = " + str(tmpXStep.y))
+    for xLoop in [x - 1, x, x + 1]:
+        b.xStep.x = tmpXStep.x
+        b.xStep.y = tmpXStep.y
+        if (xLoop < 0):
+            xTest = cubesInVolLength - 1
+            b.xStep.x = b.xStep.x + (volume.length)
+            # print("ADDED " + str(volume.length) + " TO X")
+        elif (xLoop >= cubesInVolLength):
+            xTest = 0
+            b.xStep.x = b.xStep.x - (volume.length)
+            # print("SUBBD " + str(volume.length) + " FROM X")
+        else:
+            xTest = xLoop
+            # print("NOWT DONE TO X")
+        for yLoop in [y - 1, y, y + 1]:
+            b.xStep.y = tmpXStep.y
+            # print("xLoop = " + str (xLoop) + ", yLoop = " + str(yLoop))
+            if (xLoop != x or yLoop != y):
+                if (yLoop < 0):
+                    yTest = cubesInVolLength - 1
+                    b.xStep.y = b.xStep.y + (volume.length)
+                    # print("ADDED " + str(volume.length) + " TO Y")
+                elif (yLoop >= cubesInVolLength):
+                    yTest = 0
+                    b.xStep.y = b.xStep.y - (volume.length)
+                    # print("SUBBD " + str(volume.length) + " FROM Y")
+                else:
+                    yTest = yLoop
+                    # print("DONE NOWT TO Y")
+                # print("xTest = " + str(xTest) + ", yTest = " + str(yTest))
+                # print("bead x = " + str(b.xStep.x) + ", y = " + str(b.xStep.y))
+                performLocalCalculations(b, volume.cubes[xTest][yTest])
+    b.xStep.x = tmpXStep.x
+    b.xStep.y = tmpXStep.y
+    # print("FINAL XSTEP: x = " + str(b.xStep.x) + ", y = " + str(b.xStep.y))
+    # print()
+
+def moveBeads(volume):
+    for i in range(0, cubesInVolLength):
+        for j in range(0, cubesInVolLength):
+            for b in volume.cubes[i][j].beads:
+                b.position = b.xStep
 
 v = Container(cubesInVolLength, cubeLength, dimensions, numberOfBeads)
 
-specialSet = False
+# v.cubes[0][2].beads.append(BeadA(v.cubes[2][0], Vector(97.5, 50)))
+# v.cubes[3][0].beads.append(BeadA(v.cubes[3][0], Vector(102.5, 50)))
+# v.cubes[1][1].beads.append(BeadB(v.cubes[1][1], Vector(197.5, 150)))
+# v.cubes[2][1].beads.append(BeadB(v.cubes[2][1], Vector(202.5, 150)))
+# v.cubes[3][2].beads.append(BeadA(v.cubes[3][2], Vector(397.5, 250)))
+# v.cubes[0][2].beads.append(BeadB(v.cubes[0][2], Vector(2.5, 250)))
+# v.cubes[3][2].beads.append(BeadA(v.cubes[3][2], Vector(345, 200)))
+# v.cubes[3][2].beads.append(BeadB(v.cubes[3][2], Vector(355, 200)))
+
+v.cubes[1][2].beads.append(BeadA(v.cubes[1][2], Vector(195, 205)))
+v.cubes[2][1].beads.append(BeadB(v.cubes[2][1], Vector(205, 195)))
+
 if (visualise):
     prepareVisualisation(v)
 
 if (cubeLines):
     prepareCubeLines(v)
 
-# v.cubes[1][0].beads.append(BeadA(v.cubes[1][0], Vector(150, 50)))
-# v.cubes[1][0].beads.append(BeadA(v.cubes[1][0], Vector(155, 50)))
-v.cubes[1][1].beads.append(BeadB(v.cubes[1][1], Vector(150, 150)))
-v.cubes[1][1].beads.append(BeadB(v.cubes[1][1], Vector(155, 150)))
-# v.cubes[1][2].beads.append(BeadA(v.cubes[1][2], Vector(150, 250)))
-# v.cubes[1][2].beads.append(BeadB(v.cubes[1][2], Vector(155, 250)))
+time.sleep(3)
 
 while True:
     if (visualise):
         updateBeadVisualisation(v)
     performCalculations(v)
-    # moveBeads(v)
-    # updatePosition(v)
+    moveBeads(v)
+    # updatePosition(v) # Randomly move beads (no calculations involved)
     passBeads(v)
-    time.sleep(0.01)
+    time.sleep(0.0001)
+    # time.sleep(5)
