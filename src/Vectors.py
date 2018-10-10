@@ -19,9 +19,21 @@ class Vector:
         # newZ = n.z * i
         return (Vector(newX, newY))
 
-    def add (v1, v2):
+    def add(v1, v2):
         newX = v1.x + v2.x
         newY = v1.y + v2.y
         # newZ = v1.z + v2.z
         return (Vector(newX, newY))
+
+    def subtract(v1, v2):
+        newX = v1.x - v2.x
+        newY = v1.y - v2.y
+        # newZ = v1.z + v2.z
+        return (Vector(newX, newY))
+
+    def dotProduct(v1, v2):
+        xProd = v1.x * v2.x
+        yProd = v1.y * v2.y
+        # zProd = v1.z * v2.z
+        return (xProd + yProd) # + zProd
 

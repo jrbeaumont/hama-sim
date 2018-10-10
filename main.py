@@ -11,7 +11,7 @@ from src.Beads import *
 cubesInVolLength = 4 # Number of squares in legnth, width and depth (square/cube required)
 cubeLength = 50 # Number of pixels in each sub-cube
 dimensions = 2 # Can be 2 or 3, for 2D or 3D
-numberOfBeads = 160 # Total number of beads in the system
+numberOfBeads = 320 # Total number of beads in the system
 visualise = True
 cubeLines = True
 firstCalc = True
@@ -111,6 +111,10 @@ def performCalculations(volume):
                             if (v != None):
                                 f = Vector.add(f, v)
                         b.randForce = []
+                        for v in b.dForce:
+                            if (v != None):
+                                f = Vector.add(f, v)
+                        b.dForce = []
                         b.acceleration = Vector.divide(f, b.mass)
                         f = Vector.multiply(b.acceleration, timestep)
                         b.velocity = Vector.add(b.velocity, f)
@@ -152,6 +156,10 @@ def calculateAcceleration(volume, randNums):
                     if (v != None):
                         f = Vector.add(f, v)
                 b.randForce = []
+                for v in b.dForce:
+                    if (v != None):
+                        f = Vector.add(f, v)
+                b.dForce = []
                 b.acceleration = Vector.divide(f, b.mass)
 
 def calculateVelocity(volume):
@@ -163,8 +171,9 @@ def calculateVelocity(volume):
 def performLocalCalculations(b1, cube, randNums):
     for b2 in cube.beads:
         if (b1.position.x != b2.position.x or b1.position.y != b2.position.y):
-            b1.conForce.append(conservativeForce(b1, b2, b1.position, b2.position))
-            b1.randForce.append(randomForce(b1, b2, b1.position, b2.position, timestep, randNums))
+            b1.conForce.append(conservativeForce(b1, b2))
+            b1.randForce.append(randomForce(b1, b2, timestep, randNums))
+            b1.dForce.append(dragForce(b1, b2))
 
 def performNeighbourhoodCalculations(volume, b, x, y, randNums):
     tmpPosition = Vector(b.position.x, b.position.y)
