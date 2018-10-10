@@ -94,85 +94,105 @@ def performCalculations(volume):
     randNum = random.SystemRandom().uniform(-1, 1)
     randNums.append((5, randNum))
     global firstCalc
+    if (firstCalc):
+        for i in range(0, cubesInVolLength):
+            for j in range(0, cubesInVolLength):
+                for b in volume.cubes[i][j].beads:
+                    if (firstCalc):
+                        f = Vector(0.0, 0.0)
+                        b.xStep = b.position
+                        performLocalCalculations(b, b.container, randNums)
+                        performNeighbourhoodCalculations(volume, b, i, j, randNums)
+                        for v in b.conForce:
+                            if (v != None):
+                                f = Vector.add(f, v)
+                        b.conForce = []
+                        for v in b.randForce:
+                            if (v != None):
+                                f = Vector.add(f, v)
+                        b.randForce = []
+                        b.acceleration = Vector.divide(f, b.mass)
+                        f = Vector.multiply(b.acceleration, timestep)
+                        b.velocity = Vector.add(b.velocity, f)
+                        diffX = b.velocity.x * timestep
+                        diffY = b.velocity.y * timestep
+                        b.move(diffX, diffY)
+        firstCalc = False
+    else:
+        calculateVelocityHafStep(volume)
+        calculatePosition(volume)
+        calculateAcceleration(volume, randNums)
+        calculateVelocity(volume)
+
+
+def calculateVelocityHafStep(volume):
     for i in range(0, cubesInVolLength):
         for j in range(0, cubesInVolLength):
             for b in volume.cubes[i][j].beads:
-                if (firstCalc):
-                    f = Vector(0.0, 0.0)
-                    b.xStep = b.position
-                    performLocalCalculations(b, b.container, randNums)
-                    performNeighbourhoodCalculations(volume, b, i, j, randNums)
-                    for v in b.conForce:
-                        if (v != None):
-                            f = Vector.add(f, v)
-                    b.conForce = []
-                    for v in b.randForce:
-                        if (v != None):
-                            f = Vector.add(f, v)
-                    b.randForce = []
-                    b.acceleration = Vector.divide(f, b.mass)
-                    f = Vector.multiply(b.acceleration, timestep)
-                    b.velocity = Vector.add(b.velocity, f)
-                    diffX = b.velocity.x * timestep
-                    diffY = b.velocity.y * timestep
-                    b.move(diffX, diffY)
-                else:
-                    vHalfStep = Vector.add(b.velocity, Vector.multiply(Vector.divide(b.acceleration, 2), timestep))
-                    b.xStep = Vector.add(b.position, Vector.multiply(vHalfStep, timestep))
-                    performLocalCalculations(b, b.container, randNums)
-                    performNeighbourhoodCalculations(volume, b, i, j, randNums)
-                    f = Vector(0.0, 0.0)
-                    for v in b.conForce:
-                        if (v != None):
-                            f = Vector.add(f, v)
-                    b.conForce = []
-                    for v in b.randForce:
-                        if (v != None):
-                            f = Vector.add(f, v)
-                    b.randForce = []
-                    b.acceleration = Vector.divide(f, b.mass)
-                    b.velocity = Vector.add(vHalfStep, Vector.divide(Vector.multiply(b.acceleration, timestep), 2))
-    firstCalc = False
+                b.velocityHalfStep = Vector.add(b.velocity, Vector.multiply(Vector.divide(b.acceleration, 2), timestep))
+
+def calculatePosition(volume):
+    for i in range(0, cubesInVolLength):
+        for j in range(0, cubesInVolLength):
+            for b in volume.cubes[i][j].beads:
+                b.position = Vector.add(b.position, Vector.multiply(b.velocityHalfStep, timestep))
+
+def calculateAcceleration(volume, randNums):
+    for i in range(0, cubesInVolLength):
+        for j in range(0, cubesInVolLength):
+            for b in volume.cubes[i][j].beads:
+                performLocalCalculations(b, b.container, randNums)
+                performNeighbourhoodCalculations(volume, b, i, j, randNums)
+                f = Vector(0.0, 0.0)
+                for v in b.conForce:
+                    if (v != None):
+                        f = Vector.add(f, v)
+                b.conForce = []
+                for v in b.randForce:
+                    if (v != None):
+                        f = Vector.add(f, v)
+                b.randForce = []
+                b.acceleration = Vector.divide(f, b.mass)
+
+def calculateVelocity(volume):
+    for i in range(0, cubesInVolLength):
+        for j in range(0, cubesInVolLength):
+            for b in volume.cubes[i][j].beads:
+                b.velocity = Vector.add(b.velocityHalfStep, Vector.divide(Vector.multiply(b.acceleration, timestep), 2))
 
 def performLocalCalculations(b1, cube, randNums):
     for b2 in cube.beads:
         if (b1.position.x != b2.position.x or b1.position.y != b2.position.y):
-            b1.conForce.append(conservativeForce(b1, b2, b1.xStep, b2.position))
-            b1.randForce.append(randomForce(b1, b2, b1.xStep, b2.position, timestep, randNums))
+            b1.conForce.append(conservativeForce(b1, b2, b1.position, b2.position))
+            b1.randForce.append(randomForce(b1, b2, b1.position, b2.position, timestep, randNums))
 
 def performNeighbourhoodCalculations(volume, b, x, y, randNums):
-    tmpXStep = Vector(b.xStep.x, b.xStep.y)
+    tmpPosition = Vector(b.position.x, b.position.y)
     for xLoop in [x - 1, x, x + 1]:
-        b.xStep.x = tmpXStep.x
-        b.xStep.y = tmpXStep.y
+        b.position.x = tmpPosition.x
+        b.position.y = tmpPosition.y
         if (xLoop < 0):
             xTest = cubesInVolLength - 1
-            b.xStep.x = b.xStep.x + (volume.length)
+            b.position.x = b.position.x + (volume.length)
         elif (xLoop >= cubesInVolLength):
             xTest = 0
-            b.xStep.x = b.xStep.x - (volume.length)
+            b.position.x = b.position.x - (volume.length)
         else:
             xTest = xLoop
         for yLoop in [y - 1, y, y + 1]:
-            b.xStep.y = tmpXStep.y
+            b.position.y = tmpPosition.y
             if (xLoop != x or yLoop != y):
                 if (yLoop < 0):
                     yTest = cubesInVolLength - 1
-                    b.xStep.y = b.xStep.y + (volume.length)
+                    b.position.y = b.position.y + (volume.length)
                 elif (yLoop >= cubesInVolLength):
                     yTest = 0
-                    b.xStep.y = b.xStep.y - (volume.length)
+                    b.position.y = b.position.y - (volume.length)
                 else:
                     yTest = yLoop
                 performLocalCalculations(b, volume.cubes[xTest][yTest], randNums)
-    b.xStep.x = tmpXStep.x
-    b.xStep.y = tmpXStep.y
-
-def moveBeads(volume):
-    for i in range(0, cubesInVolLength):
-        for j in range(0, cubesInVolLength):
-            for b in volume.cubes[i][j].beads:
-                b.position = b.xStep
+    b.position.x = tmpPosition.x
+    b.position.y = tmpPosition.y
 
 v = Container(cubesInVolLength, cubeLength, dimensions, numberOfBeads)
 
@@ -200,7 +220,6 @@ while True:
     if (visualise):
         updateBeadVisualisation(v)
     performCalculations(v)
-    moveBeads(v)
     # updatePosition(v) # Randomly move beads (no calculations involved)
     passBeads(v)
     time.sleep(0.001)

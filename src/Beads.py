@@ -23,7 +23,7 @@ class Bead:
     conForce = []
     randForce = []
     dForce = []
-    xStep = Vector(0.0, 0.0)
+    velocityHalfStep = Vector(0.0, 0.0)
 
     def __init__(self, creator, coord):
         self.container = creator
