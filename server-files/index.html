@@ -33,27 +33,33 @@ svg.append("rect")
 // var color = d3.scaleOrdinal(d3.schemeCategory20);
 var typeNames = []
 var colours = []
+var cutoffs = []
 
 function update(data) {
     var c = 0;
+    var multiplier = 100
     if (data.hasOwnProperty('volume')) {
-      svg.attr("width", data.volume[0].length)
-         .attr("height", data.volume[0].length);
+      // if (data.volume[0].length < 1000) {
+      //   // multiplier = 1000 / data.volume[0].length
+      // }
+      svg.attr("width", data.volume[0].length * multiplier)
+         .attr("height", data.volume[0].length * multiplier);
     } else if (data.hasOwnProperty('beadType')) {
       for (var b in data.beadType) {
         typeNames[b] = data.beadType[b].name;
         colours[b] = data.beadType[b].colour;
+        cutoffs[b] = data.beadType[b].cutoff * multiplier;
       }
     } else if (data.hasOwnProperty('lines')) {
       for (l in data.lines) {
         svg.attr("class", "lines")
            .append("line")
-           .attr("x1", data.lines[l].x1)
-           .attr("y1", data.lines[l].y1)
-           .attr("x2", data.lines[l].x2)
-           .attr("y2", data.lines[l].y2)
+           .attr("x1", data.lines[l].x1 * multiplier)
+           .attr("y1", data.lines[l].y1 * multiplier)
+           .attr("x2", data.lines[l].x2 * multiplier)
+           .attr("y2", data.lines[l].y2 * multiplier)
            .style("stroke", "gray")
-           .style("stroke-width", "2");
+           .style("stroke-width", "1");
       }
     } else {
       for (var b in data.beads) {
@@ -61,14 +67,14 @@ function update(data) {
           if (selection.empty()) {
             svg.attr("class", "beads")
                 .append("circle")
-                .attr("r", 2)
-                .attr("cx", data.beads[b].x)
-                .attr("cy", data.beads[b].y)
+                .attr("r", cutoffs[typeNames.indexOf(data.beads[b].type)] / 2)
+                .attr("cx", data.beads[b].x * multiplier)
+                .attr("cy", data.beads[b].y * multiplier)
                 .attr("id", "b_" + data.beads[b].id)
                 .attr("fill", colours[typeNames.indexOf(data.beads[b].type)]);
           } else {
-            selection.attr("cx", data.beads[b].x)
-                .attr("cy", data.beads[b].y);
+            selection.attr("cx", data.beads[b].x * multiplier)
+                .attr("cy", data.beads[b].y * multiplier);
           }
       }
     }

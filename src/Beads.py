@@ -4,14 +4,16 @@ import math
 import random
 
 interactionStrength = [
- #    A  B
+ #    A     B
  # A
-    [ 40, 200 ],
+    [ 0.25, 4 ],
  # B
-    [ 200, 40 ]
+    [ 4,    8 ]
 ]
-stochasticConstant = 2.5
-dragCoefficient = 1
+
+dragCoefficient = 0.998
+temp = 0.005
+stochasticConstant = math.sqrt(2 * dragCoefficient * temp)
 
 class Bead:
     ID = ""
@@ -19,7 +21,7 @@ class Bead:
     position = Vector(0.0, 0.0)
     velocity = Vector(0.0, 0.0);
     acceleration = Vector(0.0, 0.0);
-    cutoffRadius = 20.0
+    cutoffRadius = 1.0
     conForce = []
     randForce = []
     dForce = []
@@ -29,7 +31,6 @@ class Bead:
         self.container = creator
         self.position = coord
         self.ID = generateID(5)
-        # self.velocity = Vector(random.SystemRandom().uniform(-20, 20), random.SystemRandom().uniform(-20, 20))
 
     def move(self, dx, dy):
         newX = self.position.x + dx
@@ -39,7 +40,7 @@ class Bead:
 class BeadA(Bead):
     typeName = "A"
     colour = "#ff0000"
-    mass = 2.0
+    mass = 1.0
     interactionIndex = 0
 
 class BeadB(Bead):
@@ -66,8 +67,8 @@ def generateID(numberOfCharacters):
 
 def allBeadTypes():
     result = []
-    result.append((BeadA.typeName, BeadA.colour))
-    result.append((BeadB.typeName, BeadB.colour))
+    result.append((BeadA.typeName, BeadA.colour, BeadA.cutoffRadius))
+    result.append((BeadB.typeName, BeadB.colour, BeadB.cutoffRadius))
     return result
 
 def euclidianDistance(i, j):
@@ -90,15 +91,24 @@ def randomForce(i, j, timestep, randNums):
         vectorDistance = Vector.subtract(i.position, j.position)
         randNum = 0
         for c in i.ID:
-            randNum += ord(c)
+            val = ord(c) - 48
+            if (val > 9):
+                val -= 7
+            if (val > 35):
+                val -= 6
+            randNum += val
         for d in j.ID:
-            randNum += ord(d)
-        for x in range(0, 3):
+            val = ord(c) - 48
+            if (val > 9):
+                val -= 7
+            if (val > 35):
+                val -= 6
+            randNum += val
+        for x in range(0, len(randNums)):
             if (randNum % randNums[x][0] == 0):
                 randNum = randNum * randNums[x][1]
-        randNum /= 5 * 122 * 2
-        result = Vector.multiply(Vector.divide(vectorDistance, eucDistance), stochasticConstant * randNum * (timestep ** (-0.5)))
-        # print(i.ID + " AND " + j.ID + ": x = " + str(result.x) + ", y = " + str(result.y))
+        randNum /= 5 * 61 * 2
+        result = Vector.multiply(Vector.divide(vectorDistance, eucDistance), (1 - (eucDistance/i.cutoffRadius)) * stochasticConstant * randNum * (timestep ** (-0.5)))
         return result
 
 def dragForce(i, j):
@@ -107,5 +117,6 @@ def dragForce(i, j):
         vectorDistance = Vector.subtract(i.position, j.position)
         velocityDiff = Vector.subtract(i.velocity, j.velocity)
         dotProd = Vector.dotProduct(vectorDistance, velocityDiff)
-        result = Vector.multiply(Vector.divide(vectorDistance, (eucDistance ** 2)), -1 * dragCoefficient * dotProd)
+        result = Vector.multiply(Vector.divide(vectorDistance, (eucDistance * eucDistance)), -1 * dragCoefficient * (1 - (eucDistance/i.cutoffRadius)) * dotProd)
+        # print("Drag force: x = " + str(result.x) + ", y = " + str(result.y))
         return result
