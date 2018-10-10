@@ -86,7 +86,13 @@ def updatePosition(volume):
                 b.move(rng.randint(-10, 10), rng.randint(-10, 10))
 
 def performCalculations(volume):
+    randNums = []
     randNum = random.SystemRandom().uniform(-1, 1)
+    randNums.append((2, randNum))
+    randNum = random.SystemRandom().uniform(-1, 1)
+    randNums.append((3, randNum))
+    randNum = random.SystemRandom().uniform(-1, 1)
+    randNums.append((5, randNum))
     global firstCalc
     for i in range(0, cubesInVolLength):
         for j in range(0, cubesInVolLength):
@@ -94,8 +100,8 @@ def performCalculations(volume):
                 if (firstCalc):
                     f = Vector(0.0, 0.0)
                     b.xStep = b.position
-                    performLocalCalculations(b, b.container, randNum)
-                    performNeighbourhoodCalculations(volume, b, i, j, randNum)
+                    performLocalCalculations(b, b.container, randNums)
+                    performNeighbourhoodCalculations(volume, b, i, j, randNums)
                     for v in b.conForce:
                         if (v != None):
                             f = Vector.add(f, v)
@@ -113,8 +119,8 @@ def performCalculations(volume):
                 else:
                     vHalfStep = Vector.add(b.velocity, Vector.multiply(Vector.divide(b.acceleration, 2), timestep))
                     b.xStep = Vector.add(b.position, Vector.multiply(vHalfStep, timestep))
-                    performLocalCalculations(b, b.container, randNum)
-                    performNeighbourhoodCalculations(volume, b, i, j, randNum)
+                    performLocalCalculations(b, b.container, randNums)
+                    performNeighbourhoodCalculations(volume, b, i, j, randNums)
                     f = Vector(0.0, 0.0)
                     for v in b.conForce:
                         if (v != None):
@@ -128,13 +134,13 @@ def performCalculations(volume):
                     b.velocity = Vector.add(vHalfStep, Vector.divide(Vector.multiply(b.acceleration, timestep), 2))
     firstCalc = False
 
-def performLocalCalculations(b1, cube, randNum):
+def performLocalCalculations(b1, cube, randNums):
     for b2 in cube.beads:
         if (b1.position.x != b2.position.x or b1.position.y != b2.position.y):
             b1.conForce.append(conservativeForce(b1, b2, b1.xStep, b2.position))
-            b1.randForce.append(randomForce(b1, b2, b1.xStep, b2.position, timestep, randNum))
+            b1.randForce.append(randomForce(b1, b2, b1.xStep, b2.position, timestep, randNums))
 
-def performNeighbourhoodCalculations(volume, b, x, y, randNum):
+def performNeighbourhoodCalculations(volume, b, x, y, randNums):
     tmpXStep = Vector(b.xStep.x, b.xStep.y)
     for xLoop in [x - 1, x, x + 1]:
         b.xStep.x = tmpXStep.x
@@ -158,7 +164,7 @@ def performNeighbourhoodCalculations(volume, b, x, y, randNum):
                     b.xStep.y = b.xStep.y - (volume.length)
                 else:
                     yTest = yLoop
-                performLocalCalculations(b, volume.cubes[xTest][yTest], randNum)
+                performLocalCalculations(b, volume.cubes[xTest][yTest], randNums)
     b.xStep.x = tmpXStep.x
     b.xStep.y = tmpXStep.y
 

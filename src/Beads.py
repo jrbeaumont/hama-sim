@@ -89,7 +89,7 @@ def conservativeForce(i, j, ipos, jpos):
         result = Vector.multiply(vectorDivide, result)
         return result
 
-def randomForce(i, j, ipos, jpos, timestep, rNum):
+def randomForce(i, j, ipos, jpos, timestep, randNums):
     eucDistance = euclidianDistance(ipos, jpos)
     if (eucDistance <= i.cutoffRadius):
         vectorDistance = distanceVector(ipos, jpos)
@@ -98,8 +98,10 @@ def randomForce(i, j, ipos, jpos, timestep, rNum):
             randNum += ord(c)
         for d in j.ID:
             randNum += ord(d)
+        for x in range(0, 3):
+            if (randNum % randNums[x][0] == 0):
+                randNum = randNum * randNums[x][1]
         randNum /= 5 * 122 * 2
-        randNum *= rNum
         result = Vector.multiply(Vector.divide(vectorDistance, eucDistance), stochasticConstant * randNum * (timestep ** (-0.5)))
-        # print(i.ID + " AND " + j.ID + " = " + str(randNum))
+        # print(i.ID + " AND " + j.ID + ": x = " + str(result.x) + ", y = " + str(result.y))
         return result
