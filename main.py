@@ -94,38 +94,10 @@ def performCalculations(volume):
     randNums.append((3, randNum))
     randNum = random.SystemRandom().uniform(-1, 1)
     randNums.append((5, randNum))
-    if (firstCalc):
-        for i in range(0, cubesInVolLength):
-            for j in range(0, cubesInVolLength):
-                for b in volume.cubes[i][j].beads:
-                    f = Vector(0.0, 0.0)
-                    b.xStep = b.position
-                    performLocalCalculations(b, b.container, randNums)
-                    performNeighbourhoodCalculations(volume, b, i, j, randNums)
-                    for v in b.conForce:
-                        if (v != None):
-                            f = Vector.add(f, v)
-                    b.conForce = []
-                    for v in b.randForce:
-                        if (v != None):
-                            f = Vector.add(f, v)
-                    b.randForce = []
-                    for v in b.dForce:
-                        if (v != None):
-                            f = Vector.add(f, v)
-                    b.dForce = []
-                    b.acceleration = Vector.divide(f, b.mass)
-                    f = Vector.multiply(b.acceleration, timestep)
-                    b.velocity = Vector.add(b.velocity, f)
-                    diffX = b.velocity.x * timestep
-                    diffY = b.velocity.y * timestep
-                    b.move(diffX, diffY)
-        firstCalc = False
-    else:
-        calculateVelocityHafStep(volume)
-        calculatePosition(volume)
-        calculateAcceleration(volume, randNums)
-        calculateVelocity(volume)
+    calculateVelocityHafStep(volume)
+    calculatePosition(volume)
+    calculateAcceleration(volume, randNums)
+    calculateVelocity(volume)
 
 
 def calculateVelocityHafStep(volume):
@@ -170,37 +142,45 @@ def calculateVelocity(volume):
 def performLocalCalculations(b1, cube, randNums):
     for b2 in cube.beads:
         if (b1.position.x != b2.position.x or b1.position.y != b2.position.y):
-            b1.conForce.append(conservativeForce(b1, b2))
-            b1.randForce.append(randomForce(b1, b2, timestep, randNums))
-            b1.dForce.append(dragForce(b1, b2))
+            eucDistance = euclidianDistance(b1.position, b2.position)
+            vectorDistance = Vector.subtract(b1.position, b2.position)
+            b1.conForce.append(conservativeForce(b1, b2, eucDistance, vectorDistance))
+            b1.randForce.append(randomForce(b1, b2, eucDistance, vectorDistance, timestep, randNums))
+            b1.dForce.append(dragForce(b1, b2, eucDistance, vectorDistance))
 
 def performNeighbourhoodCalculations(volume, b, x, y, randNums):
-    tmpPosition = Vector(b.position.x, b.position.y)
     for xLoop in [x - 1, x, x + 1]:
-        b.position.x = tmpPosition.x
-        b.position.y = tmpPosition.y
+        ipos = Vector(b.position.x, b.position.y)
+        jposOffset = Vector(0.0, 0.0)
         if (xLoop < 0):
             xTest = cubesInVolLength - 1
-            b.position.x = b.position.x + (volume.length)
+            ipos.x = ipos.x + (volume.length)
         elif (xLoop >= cubesInVolLength):
             xTest = 0
-            b.position.x = b.position.x - (volume.length)
+            jposOffset.x = jposOffset.x + (volume.length)
         else:
             xTest = xLoop
+
         for yLoop in [y - 1, y, y + 1]:
-            b.position.y = tmpPosition.y
+            ipos.y = b.position.y
+            jposOffset.y = 0.0
             if (xLoop != x or yLoop != y):
                 if (yLoop < 0):
                     yTest = cubesInVolLength - 1
-                    b.position.y = b.position.y + (volume.length)
+                    ipos.y = ipos.y + (volume.length)
                 elif (yLoop >= cubesInVolLength):
                     yTest = 0
-                    b.position.y = b.position.y - (volume.length)
+                    jposOffset.y = jposOffset.y + (volume.length)
                 else:
                     yTest = yLoop
-                performLocalCalculations(b, volume.cubes[xTest][yTest], randNums)
-    b.position.x = tmpPosition.x
-    b.position.y = tmpPosition.y
+
+                for b2 in volume.cubes[xTest][yTest].beads:
+                    jpos = Vector.add(b2.position, jposOffset)
+                    eucDistance = euclidianDistance(ipos, jpos)
+                    vectorDistance = Vector.subtract(ipos, jpos)
+                    b.conForce.append(conservativeForce(b, b2, eucDistance, vectorDistance))
+                    b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
+                    b.dForce.append(dragForce(b, b2, eucDistance, vectorDistance))
 
 def addBeads(volume, aN, bN):
     cubeX = 0
@@ -210,24 +190,20 @@ def addBeads(volume, aN, bN):
         randY = random.SystemRandom().uniform(0, 20)
         randVector = Vector(randX, randY)
         for i in range(0, cubesInVolLength):
-            # print("i: " + str(volume.cubes[i][0].originCoord.x))
             cubeX = i
             if (volume.cubes[i][0].originCoord.x >= randX):
                 cubeX = i - 1
                 break
         for j in range(0, cubesInVolLength):
-            # print("j: " + str(volume.cubes[cubeX][j].originCoord.y))
             cubeY = j
             if (volume.cubes[cubeX][j].originCoord.y >= randY):
                 cubeY = j - 1
                 break
-        # print("BEAD A: x = " + str(randX) + ", y = " + str(randY) + " - PLACED IN (" + str(cubeX) + ", " + str(cubeY) + ")")
         volume.cubes[cubeX][cubeY].beads.append(BeadA(volume.cubes[cubeX][cubeY], randVector))
     for b in range(0, bN):
         randX = random.SystemRandom().uniform(0, 20)
         randY = random.SystemRandom().uniform(0, 20)
         randVector = Vector(randX, randY)
-        # print("RAND VECTOR: x = " + str(randVector.x) + ", y = " + str(randVector.y))
         for i in range(0, cubesInVolLength):
             cubeX = i
             if (volume.cubes[i][0].originCoord.x >= randX):
@@ -238,22 +214,44 @@ def addBeads(volume, aN, bN):
             if (volume.cubes[cubeX][j].originCoord.y >= randY):
                 cubeY = j - 1
                 break
-        # print("BEAD B: x = " + str(randX) + ", y = " + str(randY) + " - PLACED IN (" + str(cubeX) + ", " + str(cubeY) + ")")
         volume.cubes[cubeX][cubeY].beads.append(BeadB(volume.cubes[cubeX][cubeY], randVector))
+
+# def addBeads(volume, aN):
+#     cubeX = 0
+#     cubeY = 0
+#     for a in range(0, aN):
+#         randX = random.SystemRandom().uniform(0, 20)
+#         randY = random.SystemRandom().uniform(0, 20)
+#         randVector = Vector(randX, randY)
+#         for i in range(0, cubesInVolLength):
+#             cubeX = i
+#             if (volume.cubes[i][0].originCoord.x >= randX):
+#                 cubeX = i - 1
+#                 break
+#         for j in range(0, cubesInVolLength):
+#             cubeY = j
+#             if (volume.cubes[cubeX][j].originCoord.y >= randY):
+#                 cubeY = j - 1
+#                 break
+#         volume.cubes[cubeX][cubeY].beads.append(BeadB(volume.cubes[cubeX][cubeY], randVector))
 
 # def addBeads(volume):
 #     for i in range(0, cubesInVolLength):
 #         for j in range(0, cubesInVolLength):
 #             cube = volume.cubes[i][j]
-#             cube.beads.append(BeadA(cube, Vector(cube.originCoord.x + 0.5, cube.originCoord.y + 0.5)))
-#             cube.beads.append(BeadB(cube, Vector(cube.originCoord.x + 1.5, cube.originCoord.y + 0.5)))
-#             cube.beads.append(BeadA(cube, Vector(cube.originCoord.x + 0.5, cube.originCoord.y + 1.5)))
-#             cube.beads.append(BeadB(cube, Vector(cube.originCoord.x + 1.5, cube.originCoord.y + 1.5)))
+#             cube.beads.append(BeadB(cube, Vector(cube.originCoord.x + 0.5, cube.originCoord.y + 0.5)))
+#             cube.beads.append(BeadA(cube, Vector(cube.originCoord.x + 1.5 + 0.05, cube.originCoord.y + 0.5 + 0.05)))
+#             cube.beads.append(BeadB(cube, Vector(cube.originCoord.x + 0.5, cube.originCoord.y + 1.5)))
+#             cube.beads.append(BeadA(cube, Vector(cube.originCoord.x + 1.5 + 0.05, cube.originCoord.y + 1.5 + 0.05)))
 
+# def addBeads(volume):
+#             volume.cubes[2][2].beads.append(BeadB(volume.cubes[2][2], Vector(5.5, 5.5)))
+#             volume.cubes[2][2].beads.append(BeadB(volume.cubes[2][2], Vector(5.75, 5.5)))
 
 v = Container(cubesInVolLength, cubeLength, dimensions, numberOfBeads)
 
 addBeads(v, 200, 200)
+# addBeads(v, 450)
 # addBeads(v)
 
 if (visualise):
@@ -271,4 +269,4 @@ while True:
     # updatePosition(v) # Randomly move beads (no calculations involved)
     passBeads(v)
     # time.sleep(0.0001)
-    # time.sleep(0.1)
+    # time.sleep(3)

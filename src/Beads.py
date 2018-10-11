@@ -11,7 +11,7 @@ interactionStrength = [
     [ 4,    8 ]
 ]
 
-dragCoefficient = 0.998
+dragCoefficient = 2
 temp = 0.005
 stochasticConstant = math.sqrt(2 * dragCoefficient * temp)
 
@@ -75,20 +75,20 @@ def euclidianDistance(i, j):
     result = math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2))
     return result
 
-def conservativeForce(i, j):
-    eucDistance = euclidianDistance(i.position, j.position)
+def conservativeForce(i, j, eucDistance, vectorDistance):
+    # eucDistance = euclidianDistance(i.position, j.position)
     if (eucDistance <= i.cutoffRadius):
-        vectorDistance = Vector.subtract(i.position, j.position)
+        # vectorDistance = Vector.subtract(i.position, j.position)
         intStrength = interactionStrength[i.interactionIndex][i.interactionIndex]
         vectorDivide = Vector.divide(vectorDistance, eucDistance)
         result = intStrength * (1 - (eucDistance/i.cutoffRadius))
         result = Vector.multiply(vectorDivide, result)
         return result
 
-def randomForce(i, j, timestep, randNums):
-    eucDistance = euclidianDistance(i.position, j.position)
+def randomForce(i, j, eucDistance, vectorDistance, timestep, randNums):
+    # eucDistance = euclidianDistance(i.position, j.position)
     if (eucDistance <= i.cutoffRadius):
-        vectorDistance = Vector.subtract(i.position, j.position)
+        # vectorDistance = Vector.subtract(i.position, j.position)
         randNum = 0
         for c in i.ID:
             val = ord(c) - 48
@@ -111,10 +111,10 @@ def randomForce(i, j, timestep, randNums):
         result = Vector.multiply(Vector.divide(vectorDistance, eucDistance), (1 - (eucDistance/i.cutoffRadius)) * stochasticConstant * randNum * (timestep ** (-0.5)))
         return result
 
-def dragForce(i, j):
-    eucDistance = euclidianDistance(i.position, j.position)
+def dragForce(i, j, eucDistance, vectorDistance):
+    # eucDistance = euclidianDistance(i.position, j.position)
     if (eucDistance <= i.cutoffRadius):
-        vectorDistance = Vector.subtract(i.position, j.position)
+        # vectorDistance = Vector.subtract(i.position, j.position)
         velocityDiff = Vector.subtract(i.velocity, j.velocity)
         dotProd = Vector.dotProduct(vectorDistance, velocityDiff)
         result = Vector.multiply(Vector.divide(vectorDistance, (eucDistance * eucDistance)), -1 * dragCoefficient * (1 - (eucDistance/i.cutoffRadius)) * dotProd)
