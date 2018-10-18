@@ -3,7 +3,6 @@
 import sys
 import time
 import math
-from coordinates import Coordinate
 import os
 from src.Containers import *
 from src.Beads import *
@@ -182,45 +181,11 @@ def performNeighbourhoodCalculations(volume, b, x, y, randNums):
                     b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
                     b.dForce.append(dragForce(b, b2, eucDistance, vectorDistance))
 
-def addBeads(volume, aN, bN):
-    cubeX = 0
-    cubeY = 0
-    for a in range(0, aN):
-        randX = random.SystemRandom().uniform(0, 10)
-        randY = random.SystemRandom().uniform(0, 20)
-        randVector = Vector(randX, randY)
-        for i in range(0, cubesInVolLength):
-            cubeX = i
-            if (volume.cubes[i][0].originCoord.x >= randX):
-                cubeX = i - 1
-                break
-        for j in range(0, cubesInVolLength):
-            cubeY = j
-            if (volume.cubes[cubeX][j].originCoord.y >= randY):
-                cubeY = j - 1
-                break
-        volume.cubes[cubeX][cubeY].beads.append(BeadA(volume.cubes[cubeX][cubeY], randVector))
-    for b in range(0, bN):
-        randX = random.SystemRandom().uniform(11, 20)
-        randY = random.SystemRandom().uniform(0, 20)
-        randVector = Vector(randX, randY)
-        for i in range(0, cubesInVolLength):
-            cubeX = i
-            if (volume.cubes[i][0].originCoord.x >= randX):
-                cubeX = i - 1
-                break
-        for j in range(0, cubesInVolLength):
-            cubeY = j
-            if (volume.cubes[cubeX][j].originCoord.y >= randY):
-                cubeY = j - 1
-                break
-        volume.cubes[cubeX][cubeY].beads.append(BeadB(volume.cubes[cubeX][cubeY], randVector))
-
 # def addBeads(volume, aN, bN):
 #     cubeX = 0
 #     cubeY = 0
 #     for a in range(0, aN):
-#         randX = random.SystemRandom().uniform(0, 20)
+#         randX = random.SystemRandom().uniform(0, 10)
 #         randY = random.SystemRandom().uniform(0, 20)
 #         randVector = Vector(randX, randY)
 #         for i in range(0, cubesInVolLength):
@@ -235,7 +200,7 @@ def addBeads(volume, aN, bN):
 #                 break
 #         volume.cubes[cubeX][cubeY].beads.append(BeadA(volume.cubes[cubeX][cubeY], randVector))
 #     for b in range(0, bN):
-#         randX = random.SystemRandom().uniform(0, 20)
+#         randX = random.SystemRandom().uniform(11, 20)
 #         randY = random.SystemRandom().uniform(0, 20)
 #         randVector = Vector(randX, randY)
 #         for i in range(0, cubesInVolLength):
@@ -249,6 +214,89 @@ def addBeads(volume, aN, bN):
 #                 cubeY = j - 1
 #                 break
 #         volume.cubes[cubeX][cubeY].beads.append(BeadB(volume.cubes[cubeX][cubeY], randVector))
+
+def addBeads(volume, aN, bN):
+    cubeX = 0
+    cubeY = 0
+    for a in range(0, aN):
+        randX = random.SystemRandom().uniform(0, 20)
+        randY = random.SystemRandom().uniform(0, 20)
+        randVector = Vector(randX, randY)
+        for i in range(0, cubesInVolLength):
+            cubeX = i
+            if (volume.cubes[i][0].originCoord.x >= randX):
+                cubeX = i - 1
+                break
+        for j in range(0, cubesInVolLength):
+            cubeY = j
+            if (volume.cubes[cubeX][j].originCoord.y >= randY):
+                cubeY = j - 1
+                break
+        volume.cubes[cubeX][cubeY].beads.append(BeadA(volume.cubes[cubeX][cubeY], randVector))
+    for b in range(0, bN):
+        randX = random.SystemRandom().uniform(0, 20)
+        randY = random.SystemRandom().uniform(0, 20)
+        randVector = Vector(randX, randY)
+        for i in range(0, cubesInVolLength):
+            cubeX = i
+            if (volume.cubes[i][0].originCoord.x >= randX):
+                cubeX = i - 1
+                break
+        for j in range(0, cubesInVolLength):
+            cubeY = j
+            if (volume.cubes[cubeX][j].originCoord.y >= randY):
+                cubeY = j - 1
+                break
+        volume.cubes[cubeX][cubeY].beads.append(BeadB(volume.cubes[cubeX][cubeY], randVector))
+
+def waterTest(volume, wN, aN, bN):
+    cubeX = 0
+    cubeY = 0
+    for a in range(0, wN):
+        randX = random.SystemRandom().uniform(0, 20)
+        randY = random.SystemRandom().uniform(0, 20)
+        randVector = Vector(randX, randY)
+        for i in range(0, cubesInVolLength):
+            cubeX = i
+            if (volume.cubes[i][0].originCoord.x >= randX):
+                cubeX = i - 1
+                break
+        for j in range(0, cubesInVolLength):
+            cubeY = j
+            if (volume.cubes[cubeX][j].originCoord.y >= randY):
+                cubeY = j - 1
+                break
+        volume.cubes[cubeX][cubeY].beads.append(BeadC(volume.cubes[cubeX][cubeY], randVector))
+    for a in range(0, aN):
+        randX = random.SystemRandom().uniform(0, 20)
+        randY = random.SystemRandom().uniform(0, 20)
+        randVector = Vector(randX, randY)
+        for i in range(0, cubesInVolLength):
+            cubeX = i
+            if (volume.cubes[i][0].originCoord.x >= randX):
+                cubeX = i - 1
+                break
+        for j in range(0, cubesInVolLength):
+            cubeY = j
+            if (volume.cubes[cubeX][j].originCoord.y >= randY):
+                cubeY = j - 1
+                break
+        volume.cubes[cubeX][cubeY].beads.append(BeadA(volume.cubes[cubeX][cubeY], randVector))
+    for b in range(0, bN):
+        randX = random.SystemRandom().uniform(0, 20)
+        randY = random.SystemRandom().uniform(0, 20)
+        randVector = Vector(randX, randY)
+        for i in range(0, cubesInVolLength):
+            cubeX = i
+            if (volume.cubes[i][0].originCoord.x >= randX):
+                cubeX = i - 1
+                break
+        for j in range(0, cubesInVolLength):
+            cubeY = j
+            if (volume.cubes[cubeX][j].originCoord.y >= randY):
+                cubeY = j - 1
+                break
+        volume.cubes[cubeX][cubeY].beads.append(BeadB(volume.cubes[cubeX][cubeY], randVector))
 
 # def addBeads(volume, aN):
 #     cubeX = 0
@@ -284,9 +332,10 @@ def addBeads(volume, aN, bN):
 
 v = Container(cubesInVolLength, cubeLength, dimensions, numberOfBeads)
 
-addBeads(v, 200, 200)
+# addBeads(v, 200, 200)
 # addBeads(v, 450)
 # addBeads(v)
+waterTest(v, 300, 50, 50)
 
 if (visualise):
     prepareVisualisation(v)

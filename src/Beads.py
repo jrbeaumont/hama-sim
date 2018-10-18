@@ -1,18 +1,19 @@
-from coordinates import Coordinate
 from src.Vectors import *
 import math
 import random
 
 interactionStrength = [
- #    A     B
+ #    A     B   C
  # A
-    [ 0.25, 4 ],
+    [ 1.0,  0.05, 0.75 ],
  # B
-    [ 4,    8 ]
+    [ 0.05, 1.0,  0.75 ],
+ # C
+    [ 0.75, 0.75, 0.5 ]
 ]
 
-dragCoefficient = 2
-temp = 0.005
+dragCoefficient = 0.998
+temp = 0.05
 stochasticConstant = math.sqrt(2 * dragCoefficient * temp)
 
 class Bead:
@@ -49,6 +50,12 @@ class BeadB(Bead):
     mass = 1.0
     interactionIndex = 1
 
+class BeadC(Bead):
+    typeName = "C"
+    colour = "#0000ff"
+    mass = 1.0
+    interactionIndex = 2
+
 def generateID(numberOfCharacters):
     randomID = ""
     rng = random.SystemRandom()
@@ -69,6 +76,7 @@ def allBeadTypes():
     result = []
     result.append((BeadA.typeName, BeadA.colour, BeadA.cutoffRadius))
     result.append((BeadB.typeName, BeadB.colour, BeadB.cutoffRadius))
+    result.append((BeadC.typeName, BeadC.colour, BeadC.cutoffRadius))
     return result
 
 def euclidianDistance(i, j):

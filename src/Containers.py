@@ -1,4 +1,3 @@
-from coordinates import Coordinate
 import random
 from src.Beads import *
 
