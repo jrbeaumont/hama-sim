@@ -61,7 +61,7 @@ function update(data) {
            .style("stroke", "gray")
            .style("stroke-width", "1");
       }
-    } else {
+    } else if (data.hasOwnProperty('beads')) {
       for (var b in data.beads) {
           var selection = d3.selectAll("#b_" + data.beads[b].id)
           if (selection.empty()) {
@@ -76,6 +76,29 @@ function update(data) {
             selection.attr("cx", data.beads[b].x * multiplier)
                 .attr("cy", data.beads[b].y * multiplier);
           }
+      }
+      if (data.hasOwnProperty('bonds')) {
+        for (var b in data.bonds) {
+          var bead1 = d3.selectAll("#b_" + data.bonds[b].bead1)
+          var bead2 = d3.selectAll("#b_" + data.bonds[b].bead2)
+          selection = d3.selectAll("#bond_" + data.bonds[b].bead1 + "_" + data.bonds[b].bead2)
+          if (selection.empty()) {
+            svg.attr("class", "lines")
+               .append("line")
+               .attr("x1", bead1.attr("cx"))
+               .attr("y1", bead1.attr("cy"))
+               .attr("x2", bead2.attr("cx"))
+               .attr("y2", bead2.attr("cy"))
+               .style("stroke", "black")
+               .style("stroke-width", "3")
+               .attr("id", "bond_" + data.bonds[b].bead1 + "_" + data.bonds[b].bead2);
+          } else {
+            selection.attr("x1", bead1.attr("cx"))
+                     .attr("y1", bead1.attr("cy"))
+                     .attr("x2", bead2.attr("cx"))
+                     .attr("y2", bead2.attr("cy"))
+          }
+        }
       }
     }
 }

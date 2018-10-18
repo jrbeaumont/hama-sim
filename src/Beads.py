@@ -7,9 +7,9 @@ interactionStrength = [
  # A
     [ 1.0,  0.05, 0.75 ],
  # B
-    [ 0.05, 1.0,  0.75 ],
+    [ 0.05, 0.01, 0.75 ],
  # C
-    [ 0.75, 0.75, 0.5 ]
+    [ 0.75, 0.75, 0.5  ]
 ]
 
 dragCoefficient = 0.998
@@ -19,14 +19,16 @@ stochasticConstant = math.sqrt(2 * dragCoefficient * temp)
 class Bead:
     ID = ""
     container = None
-    position = Vector(0.0, 0.0)
-    velocity = Vector(0.0, 0.0);
-    acceleration = Vector(0.0, 0.0);
+    position = Vector(0.0, 0.0, 0.0)
+    velocity = Vector(0.0, 0.0, 0.0);
+    acceleration = Vector(0.0, 0.0, 0.0);
     cutoffRadius = 1.0
     conForce = []
     randForce = []
     dForce = []
-    velocityHalfStep = Vector(0.0, 0.0)
+    bond = None
+    bondForce = None
+    velocityHalfStep = Vector(0.0, 0.0, 0.0)
 
     def __init__(self, creator, coord):
         self.container = creator
@@ -56,6 +58,88 @@ class BeadC(Bead):
     mass = 1.0
     interactionIndex = 2
 
+class Bond:
+    eqLength = 0.75
+    U = 0.0
+    k = 1
+    bead1 = None
+    bead2 = None
+
+    def __init__(self, bead1, bead2):
+        self.bead1 = bead1
+        self.bead2 = bead2
+        eucDistance = euclidianDistance(bead1.position, bead2.position)
+        self.U = self.newU()
+        self.bead1.bond = self
+        self.bead2.bond = self
+
+    def getOtherBead(self, bead):
+        if (bead.position.x == bead1.position.x and bead.position.y == bead1.position.y and bead.position.z == bead1.position.z):
+            return bead1
+        elif (bead.position.x == bead2.position.x and bead.position.y == bead2.position.y and bead.position.z == bead2.position.z):
+            return bead2
+
+    # def __shortestPath(self):
+    #     iX = self.bead1.container.arrayPosX
+    #     iY = self.bead1.container.arrayPosY
+    #     iZ = self.bead1.container.arrayPosZ
+    #     jX = self.bead2.container.arrayPosX
+    #     jY = self.bead2.container.arrayPosY
+    #     jZ = self.bead2.container.arrayPosZ
+
+    #     xTest1 = iX
+    #     xTest2 = iX
+    #     for i in range(0, self.bead1.container.lengthInCubes - 1):
+    #         xTest1 -= 1
+    #         xTest2 += 1
+    #         if (xTest1 < 0):
+    #             xTest1 = self.bead1.container.lengthInCubes - 1
+    #         if (xTest2 >= self.bead1.container.lengthInCubes):
+    #             xTest2 = 0
+    #         if (xTest1 == )
+
+    def ensureBeadsAreNeighbours(self):
+        iPos = Vector(self.bead1.position.x, self.bead1.position.y, self.bead1.position.z)
+        jPos = Vector(self.bead2.position.x, self.bead2.position.y, self.bead2.position.z)
+        ix = self.bead1.container.arrayPosX
+        jx = self.bead2.container.arrayPosX
+        iy = self.bead1.container.arrayPosY
+        jy = self.bead2.container.arrayPosY
+        iz = self.bead1.container.arrayPosZ
+        jz = self.bead2.container.arrayPosZ
+        if (ix == 0 and jx == self.bead1.container.container.lengthInCubes - 1):
+            iPos.x = iPos.x + self.bead1.container.container.length
+        if (jx == 0 and ix == self.bead1.container.container.lengthInCubes - 1):
+            jPos.x = jPos.x + self.bead1.container.container.length
+        if (iy == 0 and jy == self.bead1.container.container.lengthInCubes - 1):
+            iPos.y = iPos.y + self.bead2.container.container.length
+        if (jy == 0 and iy == self.bead1.container.container.lengthInCubes - 1):
+            jPos.y = jPos.y + self.bead1.container.container.length
+        if (iz == 0 and jz == self.bead1.container.container.lengthInCubes - 1):
+            iPos.z = iPos.z + self.bead2.container.container.length
+        if (jz == 0 and iz == self.bead1.container.container.lengthInCubes - 1):
+            jPos.z = jPos.z + self.bead1.container.container.length
+        return (iPos, jPos)
+
+    def newU(self):
+        n = self.ensureBeadsAreNeighbours()
+        iPos = n[0]
+        jPos = n[1]
+        eucDistance = euclidianDistance(iPos, jPos)
+        return (self.k / 2) * ((eucDistance - self.eqLength) ** 2)
+
+    def calculateBondForce(self):
+        n = self.ensureBeadsAreNeighbours()
+        iPos = n[0]
+        jPos = n[1]
+        nU = self.newU()
+        eucDistance = euclidianDistance(iPos, jPos)
+        vectorDistance = Vector.subtract(iPos, jPos)
+        f = Vector.multiply(vectorDistance, -1 * (1 / eucDistance) * nU)
+        self.bead1.bondForce = f
+        self.bead2.bondForce = Vector.multiply(f,-1)
+        self.U = nU
+
 def generateID(numberOfCharacters):
     randomID = ""
     rng = random.SystemRandom()
@@ -80,13 +164,11 @@ def allBeadTypes():
     return result
 
 def euclidianDistance(i, j):
-    result = math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2))
+    result = math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2) + ((i.z - j.z) ** 2))
     return result
 
 def conservativeForce(i, j, eucDistance, vectorDistance):
-    # eucDistance = euclidianDistance(i.position, j.position)
     if (eucDistance <= i.cutoffRadius):
-        # vectorDistance = Vector.subtract(i.position, j.position)
         intStrength = interactionStrength[i.interactionIndex][i.interactionIndex]
         vectorDivide = Vector.divide(vectorDistance, eucDistance)
         result = intStrength * (1 - (eucDistance/i.cutoffRadius))
@@ -94,9 +176,7 @@ def conservativeForce(i, j, eucDistance, vectorDistance):
         return result
 
 def randomForce(i, j, eucDistance, vectorDistance, timestep, randNums):
-    # eucDistance = euclidianDistance(i.position, j.position)
     if (eucDistance <= i.cutoffRadius):
-        # vectorDistance = Vector.subtract(i.position, j.position)
         randNum = 0
         for c in i.ID:
             val = ord(c) - 48
@@ -120,11 +200,8 @@ def randomForce(i, j, eucDistance, vectorDistance, timestep, randNums):
         return result
 
 def dragForce(i, j, eucDistance, vectorDistance):
-    # eucDistance = euclidianDistance(i.position, j.position)
     if (eucDistance <= i.cutoffRadius):
-        # vectorDistance = Vector.subtract(i.position, j.position)
         velocityDiff = Vector.subtract(i.velocity, j.velocity)
         dotProd = Vector.dotProduct(vectorDistance, velocityDiff)
         result = Vector.multiply(Vector.divide(vectorDistance, (eucDistance * eucDistance)), -1 * dragCoefficient * (1 - (eucDistance/i.cutoffRadius)) * dotProd)
-        # print("Drag force: x = " + str(result.x) + ", y = " + str(result.y))
         return result
