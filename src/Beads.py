@@ -61,7 +61,7 @@ class BeadC(Bead):
 class Bond:
     eqLength = 0.75
     U = 0.0
-    k = 1
+    k = 3
     bead1 = None
     bead2 = None
 

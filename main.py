@@ -449,13 +449,13 @@ def waterTest(volume, wN, aN, bN, bonds):
         randX2 = randX + random.SystemRandom().uniform(-1, 1)
         randY2 = randY + random.SystemRandom().uniform(-1, 1)
         if (randX2 > 20):
-            randX2 = 20
+            randX2 = randX2 - 20
         elif (randX2 < 0):
-            randX2 = 0
+            randX2 = randX2 + 20
         if (randY2 > 20):
-            randY2 = 20
+            randY2 = randX2 - 20
         elif (randY2 < 0):
-            randY2 = 0
+            randY2 = randX2 + 20
         randVector2 = Vector(randX2, randY2, 0.0)
         for i in range(0, cubesInVolLength):
             cubeX = i
@@ -565,17 +565,17 @@ def waterTest3D(volume, wN, aN, bN, bonds):
         randY2 = randY + random.SystemRandom().uniform(-1, 1)
         randZ2 = randZ + random.SystemRandom().uniform(-1, 1)
         if (randX2 > 20):
-            randX2 = 20
+            randX2 = randX2 - 20
         elif (randX2 < 0):
-            randX2 = 0
+            randX2 = randX2 + 20
         if (randY2 > 20):
-            randY2 = 20
+            randY2 = randY2 - 20
         elif (randY2 < 0):
-            randY2 = 0
+            randY2 = randY2 + 20
         if (randZ2 > 20):
-            randZ2 = 20
+            randZ2 = randZ2 - 20
         elif (randZ2 < 0):
-            randZ2 = 0
+            randZ2 = randZ2 + 20
         randVector2 = Vector(randX2, randY2, randZ2)
         for i in range(0, cubesInVolLength):
             cubeX = i
@@ -633,7 +633,7 @@ v = Container(cubesInVolLength, cubeLength, 2, numberOfBeads)
 # addBeads(v, 450)
 # addBeads(v)
 # waterTest(v, 300, 10, 40)
-waterTest(v, 0, 0, 0, 200)
+waterTest(v, 300, 60, 50, 30)
 
 # v = Container(cubesInVolLength, cubeLength, 3, 0)
 # waterTest3D(v, 180, 20, 20)
@@ -655,5 +655,5 @@ while True:
     performCalculations(v)
     # updatePosition(v) # Randomly move beads (no calculations involved)
     # passBeads(v)
-    time.sleep(0.1)
+    time.sleep(0.001)
     # time.sleep(3)

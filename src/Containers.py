@@ -105,7 +105,7 @@ class Cube:
             if (newParentX >= cubesInVolLength):
                 newParentX = 0
                 x = x - (cubesInVolLength * self.length)
-        if (x < self.originCoord.x):
+        elif (x < self.originCoord.x):
             newParentX = self.arrayPosX - 1
             if (newParentX < 0):
                 newParentX = cubesInVolLength - 1;
@@ -115,7 +115,7 @@ class Cube:
             if (newParentY >= cubesInVolLength):
                 newParentY = 0
                 y = y - (cubesInVolLength * self.length)
-        if (y < self.originCoord.y):
+        elif (y < self.originCoord.y):
             newParentY = self.arrayPosY - 1
             if (newParentY < 0):
                 newParentY = cubesInVolLength - 1;
@@ -125,7 +125,7 @@ class Cube:
             if (newParentZ >= cubesInVolLength):
                 newParentZ = 0
                 z = z - (cubesInVolLength * self.length)
-        if (z < self.originCoord.z):
+        elif (z < self.originCoord.z):
             newParentZ = self.arrayPosZ - 1
             if (newParentZ < 0):
                 newParentZ = cubesInVolLength - 1;

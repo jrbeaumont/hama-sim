@@ -34,6 +34,7 @@ svg.append("rect")
 var typeNames = []
 var colours = []
 var cutoffs = []
+var maxBondLength = 0.0
 
 function update(data) {
     var c = 0;
@@ -89,8 +90,8 @@ function update(data) {
                .attr("y1", bead1.attr("cy"))
                .attr("x2", bead2.attr("cx"))
                .attr("y2", bead2.attr("cy"))
-               .style("stroke", "black")
-               .style("stroke-width", "3")
+               .style("stroke", "yellow")
+               .style("stroke-width", "5")
                .attr("id", "bond_" + data.bonds[b].bead1 + "_" + data.bonds[b].bead2);
           } else {
             selection.attr("x1", bead1.attr("cx"))
