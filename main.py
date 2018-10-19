@@ -224,13 +224,14 @@ def calculateVelocity(volume):
 def performLocalCalculations(volume, b1, cube, randNums):
     for b2 in cube.beads:
         if (b1.position.x != b2.position.x or b1.position.y != b2.position.y or b1.position.z != b2.position.z):
-            eucDistance = euclidianDistance(volume, b1.position, b2.position)
-            vectorDistance = Vector.subtract(b1.position, b2.position)
-            b1.conForce.append(conservativeForce(b1, b2, eucDistance, vectorDistance))
-            b1.randForce.append(randomForce(b1, b2, eucDistance, vectorDistance, timestep, randNums))
-            b1.dForce.append(dragForce(b1, b2, eucDistance, vectorDistance))
-            if (b1.bond != None and b1.bondForce == None):
-                b1.bond.calculateBondForce()
+            # if (b1.bond == None or b1.bond.getOtherBead != b2):
+                eucDistance = euclidianDistance(volume, b1.position, b2.position)
+                vectorDistance = Vector.subtract(b1.position, b2.position)
+                b1.conForce.append(conservativeForce(b1, b2, eucDistance, vectorDistance))
+                b1.randForce.append(randomForce(b1, b2, eucDistance, vectorDistance, timestep, randNums))
+                b1.dForce.append(dragForce(b1, b2, eucDistance, vectorDistance))
+                if (b1.bond != None and b1.bondForce == None):
+                    b1.bond.calculateBondForce()
 
 def performNeighbourhoodCalculations(volume, b, x, y, randNums):
     for xLoop in [x - 1, x, x + 1]:
@@ -259,12 +260,13 @@ def performNeighbourhoodCalculations(volume, b, x, y, randNums):
                     yTest = yLoop
 
                 for b2 in volume.cubes[xTest][yTest].beads:
-                    jpos = Vector.add(b2.position, jposOffset)
-                    eucDistance = euclidianDistance(volume, b.position, b2.position)
-                    vectorDistance = Vector.subtract(ipos, jpos)
-                    b.conForce.append(conservativeForce(b, b2, eucDistance, vectorDistance))
-                    b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
-                    b.dForce.append(dragForce(b, b2, eucDistance, vectorDistance))
+                    # if (b.bond == None or b.bond.getOtherBead != b2):
+                        jpos = Vector.add(b2.position, jposOffset)
+                        eucDistance = euclidianDistance(volume, b.position, b2.position)
+                        vectorDistance = Vector.subtract(ipos, jpos)
+                        b.conForce.append(conservativeForce(b, b2, eucDistance, vectorDistance))
+                        b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
+                        b.dForce.append(dragForce(b, b2, eucDistance, vectorDistance))
 
 def performNeighbourhoodCalculations3D(volume, b, x, y, z, randNums):
     for xLoop in [x - 1, x, x + 1]:
