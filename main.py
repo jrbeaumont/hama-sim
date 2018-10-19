@@ -168,7 +168,7 @@ def calculateAcceleration(volume, randNums):
         for j in range(0, cubesInVolLength):
             if (volume.dimensions == 2):
                 for b in volume.cubes[i][j].beads:
-                    performLocalCalculations(b, b.container, randNums)
+                    performLocalCalculations(volume, b, b.container, randNums)
                     performNeighbourhoodCalculations(volume, b, i, j, randNums)
                     f = Vector(0.0, 0.0, 0.0)
                     for v in b.conForce:
@@ -221,10 +221,10 @@ def calculateVelocity(volume):
                     for b in volume.cubes[i][j][k].beads:
                         b.velocity = Vector.add(b.velocityHalfStep, Vector.divide(Vector.multiply(b.acceleration, timestep), 2))
 
-def performLocalCalculations(b1, cube, randNums):
+def performLocalCalculations(volume, b1, cube, randNums):
     for b2 in cube.beads:
         if (b1.position.x != b2.position.x or b1.position.y != b2.position.y or b1.position.z != b2.position.z):
-            eucDistance = euclidianDistance(b1.position, b2.position)
+            eucDistance = euclidianDistance(volume, b1.position, b2.position)
             vectorDistance = Vector.subtract(b1.position, b2.position)
             b1.conForce.append(conservativeForce(b1, b2, eucDistance, vectorDistance))
             b1.randForce.append(randomForce(b1, b2, eucDistance, vectorDistance, timestep, randNums))
@@ -260,7 +260,7 @@ def performNeighbourhoodCalculations(volume, b, x, y, randNums):
 
                 for b2 in volume.cubes[xTest][yTest].beads:
                     jpos = Vector.add(b2.position, jposOffset)
-                    eucDistance = euclidianDistance(ipos, jpos)
+                    eucDistance = euclidianDistance(volume, b.position, b2.position)
                     vectorDistance = Vector.subtract(ipos, jpos)
                     b.conForce.append(conservativeForce(b, b2, eucDistance, vectorDistance))
                     b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
@@ -453,9 +453,9 @@ def waterTest(volume, wN, aN, bN, bonds):
         elif (randX2 < 0):
             randX2 = randX2 + 20
         if (randY2 > 20):
-            randY2 = randX2 - 20
+            randY2 = randY2 - 20
         elif (randY2 < 0):
-            randY2 = randX2 + 20
+            randY2 = randY2 + 20
         randVector2 = Vector(randX2, randY2, 0.0)
         for i in range(0, cubesInVolLength):
             cubeX = i
@@ -633,7 +633,7 @@ v = Container(cubesInVolLength, cubeLength, 2, numberOfBeads)
 # addBeads(v, 450)
 # addBeads(v)
 # waterTest(v, 300, 10, 40)
-waterTest(v, 300, 60, 50, 30)
+waterTest(v, 350, 60, 50, 30)
 
 # v = Container(cubesInVolLength, cubeLength, 3, 0)
 # waterTest3D(v, 180, 20, 20)
