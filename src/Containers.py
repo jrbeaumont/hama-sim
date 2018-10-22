@@ -4,7 +4,7 @@ from src.Beads import *
 coordinates = []
 
 class Container:
-    lengthInCubes = 0 # Number of squares in legnth, width and depth (square/cube required)
+    lengthInCubes = 0 # Number of squares in legnth, width and depth (square or cube required)
     cubeLength = 0 # Number of pixels in each sub-cube
     dimensions = 0 # Can be 2 or 3, for 2D or 3D
     numberOfBeads = 0 # Total number of beads in the system
