@@ -44,19 +44,19 @@ class BeadA(Bead):
     typeName = "A"
     colour = "#ff0000"
     mass = 1.0
-    interactionIndex = 0
+    typeNumber = 0
 
 class BeadB(Bead):
     typeName = "B"
     colour = "#000000"
     mass = 1.0
-    interactionIndex = 1
+    typeNumber = 1
 
 class BeadC(Bead):
     typeName = "C"
     colour = "#0000ff"
     mass = 1.0
-    interactionIndex = 2
+    typeNumber = 2
 
 class Bond:
     eqLength = 0.75
@@ -181,7 +181,7 @@ def euclidianDistance(volume, i, j):
 
 def conservativeForce(i, j, eucDistance, vectorDistance):
     if (eucDistance < i.cutoffRadius):
-        intStrength = interactionStrength[i.interactionIndex][j.interactionIndex]
+        intStrength = interactionStrength[i.typeNumber][j.typeNumber]
         vectorDivide = Vector.divide(vectorDistance, eucDistance)
         result = intStrength * (1 - (eucDistance/i.cutoffRadius))
         result = Vector.multiply(vectorDivide, result)
