@@ -129,14 +129,16 @@ def calculateVelocity(volume, timestep):
 def performLocalCalculations(volume, b1, cube, randNums, timestep):
     for b2 in cube.beads:
         if (b1.position.x != b2.position.x or b1.position.y != b2.position.y or b1.position.z != b2.position.z):
-            # if (b1.bond == None or b1.bond.getOtherBead != b2):
-                eucDistance = euclidianDistance(volume, b1.position, b2.position)
-                vectorDistance = Vector.subtract(b1.position, b2.position)
-                b1.conForce.append(conservativeForce(b1, b2, eucDistance, vectorDistance))
-                b1.randForce.append(randomForce(b1, b2, eucDistance, vectorDistance, timestep, randNums))
-                b1.dForce.append(dragForce(b1, b2, eucDistance, vectorDistance))
-                if (b1.bond != None and b1.bondForce == None):
-                    b1.bond.calculateBondForce()
+            distances = getShortestDistances(volume, b1.position, b2.position)
+            eucDistance = distances[0]
+            vectorDistance = distances[1]
+            # eucDistance = euclidianDistance(volume, b1.position, b2.position)
+            # vectorDistance = Vector.subtract(b1.position, b2.position)
+            b1.conForce.append(conservativeForce(b1, b2, eucDistance, vectorDistance))
+            b1.randForce.append(randomForce(b1, b2, eucDistance, vectorDistance, timestep, randNums))
+            b1.dForce.append(dragForce(b1, b2, eucDistance, vectorDistance))
+            if (b1.bond != None and b1.bondForce == None):
+                b1.bond.calculateBondForce()
 
 def performNeighbourhoodCalculations2D(volume, b, x, y, randNums):
     for xLoop in [x - 1, x, x + 1]:
@@ -213,8 +215,11 @@ def performNeighbourhoodCalculations(volume, b, x, y, z, randNums, timestep):
 
                     for b2 in volume.cubes[xTest][yTest][zTest].beads:
                         jpos = Vector.add(b2.position, jposOffset)
-                        eucDistance = euclidianDistance(volume, ipos, jpos)
-                        vectorDistance = Vector.subtract(ipos, jpos)
+                        distance = getShortestDistances(volume, ipos, jpos)
+                        eucDistance = distance[0]
+                        vectorDistance = distance[1]
+                        # eucDistance = euclidianDistance(volume, ipos, jpos)
+                        # vectorDistance = Vector.subtract(ipos, jpos)
                         b.conForce.append(conservativeForce(b, b2, eucDistance, vectorDistance))
                         b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
                         b.dForce.append(dragForce(b, b2, eucDistance, vectorDistance))

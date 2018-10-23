@@ -2,7 +2,9 @@ from src.Vectors import *
 import math
 import random
 
-interactionStrength = [
+numericID = 0
+
+interactionMatrix = [
  #    A     B   C
  # A
     [ 1.0,  0.05, 0.75 ],
@@ -11,10 +13,6 @@ interactionStrength = [
  # C
     [ 0.75, 0.75, 0.5  ]
 ]
-
-dragCoefficient = 0.998
-temp = 0.05
-stochasticConstant = math.sqrt(2 * dragCoefficient * temp)
 
 class Bead:
     ID = ""
@@ -29,34 +27,39 @@ class Bead:
     bond = None
     bondForce = None
     velocityHalfStep = Vector(0.0, 0.0, 0.0)
+    dragCoefficient = 4.5
+    stochasticConstant = 0.0
+    interactions = []
 
-    def __init__(self, creator, coord):
+    def __init__(self, creator, coord, interactions):
+        stochasticConstant = math.sqrt(2 * self.dragCoefficient * creator.container.temp)
         self.container = creator
         self.position = coord
         self.ID = generateID(5)
+        self.interactions = interactions
 
     def move(self, dx, dy):
         newX = self.position.x + dx
         newY = self.position.y + dy
         self.position = Vector(self.position.x + dx, self.position.y + dy)
 
-class BeadA(Bead):
-    typeName = "A"
-    colour = "#ff0000"
-    mass = 1.0
-    typeNumber = 0
+# class BeadA(Bead):
+#     typeName = "A"
+#     colour = "#ff0000"
+#     mass = 1.0
+#     typeNumber = 0
 
-class BeadB(Bead):
-    typeName = "B"
-    colour = "#000000"
-    mass = 1.0
-    typeNumber = 1
+# class BeadB(Bead):
+#     typeName = "B"
+#     colour = "#000000"
+#     mass = 1.0
+#     typeNumber = 1
 
-class BeadC(Bead):
-    typeName = "C"
-    colour = "#0000ff"
-    mass = 1.0
-    typeNumber = 2
+# class BeadC(Bead):
+#     typeName = "C"
+#     colour = "#0000ff"
+#     mass = 1.0
+#     typeNumber = 2
 
 class Bond:
     eqLength = 0.75
@@ -124,20 +127,24 @@ class Bond:
         self.U = nU
 
 def generateID(numberOfCharacters):
-    randomID = ""
-    rng = random.SystemRandom()
-    for i in range(0, numberOfCharacters):
-        val = rng.randint(0, 61)
-        if (val <= 9):
-            randomID += str(val)
-        else:
-            val -= 10
-            if (val <= 25):
-                randomID += chr(val + 65)
-            else:
-                val-= 26
-                randomID += chr(val + 97)
-    return randomID
+    global numericID
+    i = numericID
+    numericID += 1
+    # randomID = ""
+    # rng = random.SystemRandom()
+    # for i in range(0, numberOfCharacters):
+    #     val = rng.randint(0, 61)
+    #     if (val <= 9):
+    #         randomID += str(val)
+    #     else:
+    #         val -= 10
+    #         if (val <= 25):
+    #             randomID += chr(val + 65)
+    #         else:
+    #             val-= 26
+    #             randomID += chr(val + 97)
+    # return randomID
+    return i
 
 def allBeadTypes():
     result = []
@@ -146,42 +153,52 @@ def allBeadTypes():
     result.append((BeadC.typeName, BeadC.colour, BeadC.cutoffRadius))
     return result
 
-def euclidianDistance(volume, i, j):
-    result = math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2) + ((i.z - j.z) ** 2))
-    origResult = math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2) + ((i.z - j.z) ** 2))
-    # print("original result = " + str(result))
+def getShortestDistances(volume, i, j):
+    result = (math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2) + ((i.z - j.z) ** 2)), i, j)
+    iPoss = []
+    jPoss = []
     r = []
     # I
-    r.append(math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2) + (((i.z + volume.length) - j.z) ** 2)))
-    r.append(math.sqrt(((i.x - j.x) ** 2) + (((i.y + volume.length) - j.y) ** 2) + ((i.z - j.z) ** 2)))
-    r.append(math.sqrt(((i.x - j.x) ** 2) + (((i.y + volume.length) - j.y) ** 2) + (((i.z + volume.length) - j.z) ** 2)))
-    r.append(math.sqrt((((i.x + volume.length) - j.x) ** 2) + ((i.y - j.y) ** 2) + ((i.z - j.z) ** 2)))
-    r.append(math.sqrt((((i.x + volume.length) - j.x) ** 2) + ((i.y - j.y) ** 2) + (((i.z + volume.length) - j.z) ** 2)))
-    r.append(math.sqrt((((i.x + volume.length) - j.x) ** 2) + (((i.y + volume.length) - j.y) ** 2) + ((i.z - j.z) ** 2)))
-    r.append(math.sqrt((((i.x + volume.length) - j.x) ** 2) + (((i.y + volume.length) - j.y) ** 2) + (((i.z + volume.length) - j.z) ** 2)))
-
+    iPoss.append(Vector(i.x, i.y, i.z + volume.length))
+    iPoss.append(Vector(i.x, i.y + volume.length, i.z))
+    iPoss.append(Vector(i.x, i.y + volume.length, i.z + volume.length))
+    iPoss.append(Vector(i.x + volume.length, i.y, i.z))
+    iPoss.append(Vector(i.x + volume.length, i.y, i.z + volume.length))
+    iPoss.append(Vector(i.x + volume.length, i.y + volume.length, i.z))
+    iPoss.append(Vector(i.x + volume.length, i.y + volume.length, i.z + volume.length))
     # J
-    r.append(math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2) + ((i.z - (j.z + volume.length)) ** 2)))
-    r.append(math.sqrt(((i.x - j.x) ** 2) + ((i.y - (j.y + volume.length)) ** 2) + ((i.z - j.z) ** 2)))
-    r.append(math.sqrt(((i.x - j.x) ** 2) + ((i.y - (j.y + volume.length)) ** 2) + ((i.z - (j.z + volume.length)) ** 2)))
-    r.append(math.sqrt(((i.x - (j.x + volume.length)) ** 2) + ((i.y - j.y) ** 2) + ((i.z - j.z) ** 2)))
-    r.append(math.sqrt(((i.x - (j.x + volume.length)) ** 2) + ((i.y - j.y) ** 2) + ((i.z - (j.z + volume.length)) ** 2)))
-    r.append(math.sqrt(((i.x - (j.x + volume.length)) ** 2) + ((i.y - (j.y + volume.length)) ** 2) + ((i.z - j.z) ** 2)))
-    r.append(math.sqrt(((i.x - (j.x + volume.length)) ** 2) + ((i.y - (j.y + volume.length)) ** 2) + ((i.z - (j.z + volume.length)) ** 2)))
+    jPoss.append(Vector(j.x, j.y, j.z + volume.length))
+    jPoss.append(Vector(j.x, j.y + volume.length, j.z))
+    jPoss.append(Vector(j.x, j.y + volume.length, j.z + volume.length))
+    jPoss.append(Vector(j.x + volume.length, j.y, j.z))
+    jPoss.append(Vector(j.x + volume.length, j.y, j.z + volume.length))
+    jPoss.append(Vector(j.x + volume.length, j.y + volume.length, j.z))
+    jPoss.append(Vector(j.x + volume.length, j.y + volume.length, j.z + volume.length))
+
+    for p in range(0, len(iPoss)):
+        e = math.sqrt(((iPoss[p].x - j.x) ** 2) + ((iPoss[p].y - j.y) ** 2) + ((iPoss[p].z - j.z) ** 2))
+        t = (e, iPoss[p], j)
+        r.append(t)
+
+    for q in range(0, len(jPoss)):
+        e = math.sqrt(((i.x - jPoss[q].x) ** 2) + ((i.y - jPoss[q].y) ** 2) + ((i.z - jPoss[q].z) ** 2))
+        t = (e, i, jPoss[q])
+        r.append(t)
 
     for x in r:
-        if x < result:
+        if x[0] < result[0]:
             result = x
 
-
-    # print("final result = " + str(result))
-    # if (result != origResult):
-    #     input()
-    return result
+    eucDistance = result[0]
+    vecDistance = Vector.subtract(result[1], result[2])
+    # print("eucDistance = " + str(eucDistance))
+    # print("vecDistance = (" + str(vecDistance.x) + ", " + str(vecDistance.y) + ", " + str(vecDistance.z) + ")")
+    return (eucDistance, vecDistance)
 
 def conservativeForce(i, j, eucDistance, vectorDistance):
     if (eucDistance < i.cutoffRadius):
-        intStrength = interactionStrength[i.typeNumber][j.typeNumber]
+        # intStrength = interactionStrength[i.typeNumber][j.typeNumber]
+        intStrength = i.interactions[j.typeNumber]
         vectorDivide = Vector.divide(vectorDistance, eucDistance)
         result = intStrength * (1 - (eucDistance/i.cutoffRadius))
         result = Vector.multiply(vectorDivide, result)
@@ -190,30 +207,31 @@ def conservativeForce(i, j, eucDistance, vectorDistance):
 def randomForce(i, j, eucDistance, vectorDistance, timestep, randNums):
     if (eucDistance < i.cutoffRadius):
         randNum = 0
-        for c in i.ID:
-            val = ord(c) - 48
-            if (val > 9):
-                val -= 7
-            if (val > 35):
-                val -= 6
-            randNum += val
-        for d in j.ID:
-            val = ord(c) - 48
-            if (val > 9):
-                val -= 7
-            if (val > 35):
-                val -= 6
-            randNum += val
+        # for c in i.ID:
+        #     val = ord(c) - 48
+        #     if (val > 9):
+        #         val -= 7
+        #     if (val > 35):
+        #         val -= 6
+        #     randNum += val
+        # for d in j.ID:
+        #     val = ord(c) - 48
+        #     if (val > 9):
+        #         val -= 7
+        #     if (val > 35):
+        #         val -= 6
+        #     randNum += val
+        randNum = i.ID + j.ID
         for x in range(0, len(randNums)):
             if (randNum % randNums[x][0] == 0):
                 randNum = randNum * randNums[x][1]
-        randNum /= 5 * 61 * 2
-        result = Vector.multiply(Vector.divide(vectorDistance, eucDistance), (1 - (eucDistance/i.cutoffRadius)) * stochasticConstant * randNum * (timestep ** (-0.5)))
+        # randNum /= 5 * 61 * 2
+        result = Vector.multiply(Vector.divide(vectorDistance, eucDistance), (1 - (eucDistance/i.cutoffRadius)) * i.stochasticConstant * randNum * (timestep ** (-0.5)))
         return result
 
 def dragForce(i, j, eucDistance, vectorDistance):
     if (eucDistance < i.cutoffRadius):
         velocityDiff = Vector.subtract(i.velocity, j.velocity)
         dotProd = Vector.dotProduct(vectorDistance, velocityDiff)
-        result = Vector.multiply(Vector.divide(vectorDistance, (eucDistance * eucDistance)), -1 * dragCoefficient * ((1 - (eucDistance/i.cutoffRadius)) ** 2) * dotProd)
+        result = Vector.multiply(Vector.divide(vectorDistance, (eucDistance * eucDistance)), -1 * i.dragCoefficient * ((1 - (eucDistance/i.cutoffRadius)) ** 2) * dotProd)
         return result

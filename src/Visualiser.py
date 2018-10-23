@@ -33,7 +33,8 @@ def updateVisualisation(volume):
             for k in range(0, volume.lengthInCubes):
                 for b in volume.cubes[i][j][k].beads:
             # for b in volume.cubes[i][j].beads:
-                    o+="\t\t{\"id\": \""+ b.ID +"\", "
+                    # o+="\t\t{\"id\": \""+ b.ID +"\", "
+                    o+="\t\t{\"id\": " + str(b.ID) + ", "
                     o+="\"x\": " + str(b.position.x) + ", \"y\": " + str(b.position.y) + ", \"z\": " + str(b.position.z) + ", "
                     o+="\"vx\": " + str(b.velocity.x) + ", \"vy\": " + str(b.velocity.y) + ", \"vz\": " + str(b.velocity.z) + ", "
                     o+= "\"type\": " + str(b.typeNumber) + "},"
@@ -43,6 +44,6 @@ def updateVisualisation(volume):
     out = open("state.json", "w")
     print(o, file=out)
     out.close()
-    # print(o)
+    print(o)
     print("u")
     sys.stdout.flush()

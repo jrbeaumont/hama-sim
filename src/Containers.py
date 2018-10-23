@@ -7,23 +7,21 @@ class Container:
     lengthInCubes = 0 # Number of squares in legnth, width and depth (square or cube required)
     cubeLength = 0 # Number of pixels in each sub-cube
     dimensions = 0 # Can be 2 or 3, for 2D or 3D
-    numberOfBeads = 0 # Total number of beads in the system
     volume = 0 # (cubeLength * lengthInCubes) ** dimensions
     length = lengthInCubes * cubeLength
     noOfCubes = length ** dimensions
-    beads = numberOfBeads
     cubes = []
     special = 0
+    temp = 0
 
-    def __init__ (self, cubesInVolLength, cubeLength, dimensions, numberOfBeads):
+    def __init__ (self, cubesInVolLength, cubeLength, dimensions, temperature):
         self.lengthInCubes = cubesInVolLength
         self.cubeLength = cubeLength
         self.dimensions = dimensions
-        self.numberOfBeads = numberOfBeads
         self.volume = (self.cubeLength * self.lengthInCubes) ** self.dimensions
         self.length = self.lengthInCubes * self.cubeLength
         self.noOfCubes = self.length ** self.dimensions
-        self.beads = numberOfBeads
+        self.temperature = temperature
         if (dimensions == 2):
             for i in range(0, cubesInVolLength):
                 l = []
