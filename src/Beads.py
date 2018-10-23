@@ -2,8 +2,6 @@ from src.Vectors import *
 import math
 import random
 
-numericID = 0
-
 interactionMatrix = [
  #    A     B   C
  # A
@@ -127,24 +125,20 @@ class Bond:
         self.U = nU
 
 def generateID(numberOfCharacters):
-    global numericID
-    i = numericID
-    numericID += 1
-    # randomID = ""
-    # rng = random.SystemRandom()
-    # for i in range(0, numberOfCharacters):
-    #     val = rng.randint(0, 61)
-    #     if (val <= 9):
-    #         randomID += str(val)
-    #     else:
-    #         val -= 10
-    #         if (val <= 25):
-    #             randomID += chr(val + 65)
-    #         else:
-    #             val-= 26
-    #             randomID += chr(val + 97)
-    # return randomID
-    return i
+    randomID = ""
+    rng = random.SystemRandom()
+    for i in range(0, numberOfCharacters):
+        val = rng.randint(0, 61)
+        if (val <= 9):
+            randomID += str(val)
+        else:
+            val -= 10
+            if (val <= 25):
+                randomID += chr(val + 65)
+            else:
+                val-= 26
+                randomID += chr(val + 97)
+    return randomID
 
 def allBeadTypes():
     result = []
@@ -207,25 +201,24 @@ def conservativeForce(i, j, eucDistance, vectorDistance):
 def randomForce(i, j, eucDistance, vectorDistance, timestep, randNums):
     if (eucDistance < i.cutoffRadius):
         randNum = 0
-        # for c in i.ID:
-        #     val = ord(c) - 48
-        #     if (val > 9):
-        #         val -= 7
-        #     if (val > 35):
-        #         val -= 6
-        #     randNum += val
-        # for d in j.ID:
-        #     val = ord(c) - 48
-        #     if (val > 9):
-        #         val -= 7
-        #     if (val > 35):
-        #         val -= 6
-        #     randNum += val
-        randNum = i.ID + j.ID
+        for c in i.ID:
+            val = ord(c) - 48
+            if (val > 9):
+                val -= 7
+            if (val > 35):
+                val -= 6
+            randNum += val
+        for d in j.ID:
+            val = ord(c) - 48
+            if (val > 9):
+                val -= 7
+            if (val > 35):
+                val -= 6
+            randNum += val
         for x in range(0, len(randNums)):
             if (randNum % randNums[x][0] == 0):
                 randNum = randNum * randNums[x][1]
-        # randNum /= 5 * 61 * 2
+        randNum /= 5 * 61 * 2
         result = Vector.multiply(Vector.divide(vectorDistance, eucDistance), (1 - (eucDistance/i.cutoffRadius)) * i.stochasticConstant * randNum * (timestep ** (-0.5)))
         return result
 
