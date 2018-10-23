@@ -1,15 +1,69 @@
 import sys
 from src.Beads import *
 
-def updateBeadVisualisation(volume):
+def updateBeadVisualisationY(volume):
     o = "{\n"
     o+= "\t\"beads\": [\n"
     bonds = []
     for i in range(0, volume.lengthInCubes):
         for j in range(0, volume.lengthInCubes):
-            for b in volume.cubes[i][j].beads:
+            for b in volume.cubes[i][j][0].beads:
                 o+="\t\t{\"id\": \""+ b.ID +"\", "
                 o+="\"x\": " + str(b.position.x) + ", \"y\": " + str(b.position.y) + ", "
+                o+= "\"type\": \"" + b.typeName + "\"},"
+                o+="\n"
+                if (b.bond != None):
+                    if b.bond not in bonds:
+                        bonds.append(b.bond)
+    o = o[:-2]
+    o+="\n\t]\n\n"
+    if bonds:
+        o = o[:-2]
+        o+=",\n\n\t\"bonds\": [\n"
+        for b in bonds:
+            o+="\t\t{\"bead1\": \"" + b.bead1.ID + "\", \"bead2\": \"" + b.bead2.ID + "\"},\n"
+        o = o[:-2]
+        o+="\n\t]\n"
+    o+= '}\n'
+    print(o)
+    sys.stdout.flush()
+
+def updateBeadVisualisationZ(volume):
+    o = "{\n"
+    o+= "\t\"beads\": [\n"
+    bonds = []
+    for i in range(0, volume.lengthInCubes):
+        for j in range(0, volume.lengthInCubes):
+            for b in volume.cubes[i][0][j].beads:
+                o+="\t\t{\"id\": \""+ b.ID +"\", "
+                o+="\"x\": " + str(b.position.x) + ", \"y\": " + str(b.position.z) + ", "
+                o+= "\"type\": \"" + b.typeName + "\"},"
+                o+="\n"
+                if (b.bond != None):
+                    if b.bond not in bonds:
+                        bonds.append(b.bond)
+    o = o[:-2]
+    o+="\n\t]\n\n"
+    if bonds:
+        o = o[:-2]
+        o+=",\n\n\t\"bonds\": [\n"
+        for b in bonds:
+            o+="\t\t{\"bead1\": \"" + b.bead1.ID + "\", \"bead2\": \"" + b.bead2.ID + "\"},\n"
+        o = o[:-2]
+        o+="\n\t]\n"
+    o+= '}\n'
+    print(o)
+    sys.stdout.flush()
+
+def updateBeadVisualisationYZ(volume):
+    o = "{\n"
+    o+= "\t\"beads\": [\n"
+    bonds = []
+    for i in range(0, volume.lengthInCubes):
+        for j in range(0, volume.lengthInCubes):
+            for b in volume.cubes[0][i][j].beads:
+                o+="\t\t{\"id\": \""+ b.ID +"\", "
+                o+="\"x\": " + str(b.position.y) + ", \"y\": " + str(b.position.z) + ", "
                 o+= "\"type\": \"" + b.typeName + "\"},"
                 o+="\n"
                 if (b.bond != None):
