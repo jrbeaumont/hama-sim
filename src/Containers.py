@@ -21,7 +21,7 @@ class Container:
         self.volume = (self.cubeLength * self.lengthInCubes) ** self.dimensions
         self.length = self.lengthInCubes * self.cubeLength
         self.noOfCubes = self.length ** self.dimensions
-        self.temperature = temperature
+        self.temp = temperature
         if (dimensions == 2):
             for i in range(0, cubesInVolLength):
                 l = []
@@ -139,6 +139,9 @@ class Cube:
             else:
                 bead.container = self.container.cubes[newParentX][newParentY][newParentZ]
                 self.container.cubes[newParentX][newParentY][newParentZ].beads.append(bead)
+        # if (bead.position.x < 0 or bead.position.x >= 10 or bead.position.y < 0 or bead.position.y >= 10 or bead.position.z < 0 or bead.position.z >= 10):
+            # print("BROKEN POSITION = (" + str(bead.position.x) + ", " + str(bead.position.y) + ", " + str(bead.position.z) + ")")
+            # input()
 
     def remove(self, bead):
         for b in self.beads:

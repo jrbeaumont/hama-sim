@@ -36,8 +36,12 @@ def performCalculations(volume, timestep):
     randNums = []
     randNum = random.SystemRandom().uniform(-1, 1)
     randNums.append((2, randNum))
-    randNum = random.SystemRandom().uniform(-1, 1)
-    randNums.append((3, randNum))
+    if (randNum < 0):
+        randNum = random.SystemRandom().uniform(0, 1)
+        randNums.append((3, randNum))
+    else:
+        randNum = random.SystemRandom().uniform(-1, 0)
+        randNums.append((3, randNum))
     randNum = random.SystemRandom().uniform(-1, 1)
     randNums.append((5, randNum))
     calculateVelocityHalfStep(volume, timestep)
@@ -98,18 +102,24 @@ def calculateAcceleration(volume, randNums, timestep):
                         performLocalCalculations(volume, b, b.container, randNums, timestep)
                         performNeighbourhoodCalculations(volume, b, i, j, k, randNums, timestep)
                         f = Vector(0.0, 0.0, 0.0)
+                        c = Vector(0.0, 0.0, 0.0)
+                        r = Vector(0.0, 0.0, 0.0)
+                        d = Vector(0.0, 0.0, 0.0)
                         for v in b.conForce:
                             if (v != None):
-                                f = Vector.add(f, v)
+                                c = Vector.add(c, v)
                         b.conForce = []
+                        f = Vector.add(f, c)
                         for v in b.randForce:
                             if (v != None):
-                                f = Vector.add(f, v)
+                                r = Vector.add(r, v)
                         b.randForce = []
+                        f = Vector.add(f, r)
                         for v in b.dForce:
                             if (v != None):
-                                f = Vector.add(f, v)
+                                d = Vector.add(d, v)
                         b.dForce = []
+                        f = Vector.add(f, d)
                         if (b.bondForce != None):
                             f = Vector.add(f, b.bondForce)
                         b.bondForce = None

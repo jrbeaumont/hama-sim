@@ -30,7 +30,7 @@ class Bead:
     interactions = []
 
     def __init__(self, creator, coord, interactions):
-        stochasticConstant = math.sqrt(2 * self.dragCoefficient * creator.container.temp)
+        self.stochasticConstant = math.sqrt(2 * self.dragCoefficient * creator.container.temp)
         self.container = creator
         self.position = coord
         self.ID = generateID(5)
@@ -191,7 +191,6 @@ def getShortestDistances(volume, i, j):
 
 def conservativeForce(i, j, eucDistance, vectorDistance):
     if (eucDistance < i.cutoffRadius):
-        # intStrength = interactionStrength[i.typeNumber][j.typeNumber]
         intStrength = i.interactions[j.typeNumber]
         vectorDivide = Vector.divide(vectorDistance, eucDistance)
         result = intStrength * (1 - (eucDistance/i.cutoffRadius))
@@ -209,7 +208,7 @@ def randomForce(i, j, eucDistance, vectorDistance, timestep, randNums):
                 val -= 6
             randNum += val
         for d in j.ID:
-            val = ord(c) - 48
+            val = ord(d) - 48
             if (val > 9):
                 val -= 7
             if (val > 35):
@@ -218,7 +217,7 @@ def randomForce(i, j, eucDistance, vectorDistance, timestep, randNums):
         for x in range(0, len(randNums)):
             if (randNum % randNums[x][0] == 0):
                 randNum = randNum * randNums[x][1]
-        randNum /= 5 * 61 * 2
+        randNum /= (5 * 61 * 2)
         result = Vector.multiply(Vector.divide(vectorDistance, eucDistance), (1 - (eucDistance/i.cutoffRadius)) * i.stochasticConstant * randNum * (timestep ** (-0.5)))
         return result
 
@@ -226,5 +225,5 @@ def dragForce(i, j, eucDistance, vectorDistance):
     if (eucDistance < i.cutoffRadius):
         velocityDiff = Vector.subtract(i.velocity, j.velocity)
         dotProd = Vector.dotProduct(vectorDistance, velocityDiff)
-        result = Vector.multiply(Vector.divide(vectorDistance, (eucDistance * eucDistance)), -1 * i.dragCoefficient * ((1 - (eucDistance/i.cutoffRadius)) ** 2) * dotProd)
+        result = Vector.multiply(Vector.divide(vectorDistance, (eucDistance ** 2)), -1 * i.dragCoefficient * ((1 - (eucDistance/i.cutoffRadius)) ** 2) * dotProd)
         return result

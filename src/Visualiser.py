@@ -41,6 +41,7 @@ def orderedUpdateVis(beads):
     # print(o)
     print("u")
     sys.stdout.flush()
+    # input()
 
 def updateVisualisation(volume):
     o = "{\n"

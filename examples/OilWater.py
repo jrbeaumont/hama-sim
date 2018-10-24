@@ -51,6 +51,7 @@ def addBeads(container, nW, nY, nR):
         randY = random.SystemRandom().uniform(0, container.cubeLength * container.lengthInCubes)
         randZ = random.SystemRandom().uniform(0, container.cubeLength * container.lengthInCubes)
         randVector = Vector(randX, randY, randZ)
+        # randVector = Vector(randX, randY, 0.0)
         for i in range(0, container.lengthInCubes):
             cubeX = i
             if (container.cubes[i][0][0].originCoord.x >= randX):
@@ -74,6 +75,7 @@ def addBeads(container, nW, nY, nR):
         randY = random.SystemRandom().uniform(0, container.cubeLength * container.lengthInCubes)
         randZ = random.SystemRandom().uniform(0, container.cubeLength * container.lengthInCubes)
         randVector = Vector(randX, randY, randZ)
+        # randVector = Vector(randX, randY, 0.0)
         for i in range(0, container.lengthInCubes):
             cubeX = i
             if (container.cubes[i][0][0].originCoord.x >= randX):
@@ -97,6 +99,7 @@ def addBeads(container, nW, nY, nR):
         randY = random.SystemRandom().uniform(0, container.cubeLength * container.lengthInCubes)
         randZ = random.SystemRandom().uniform(0, container.cubeLength * container.lengthInCubes)
         randVector = Vector(randX, randY, randZ)
+        # randVector = Vector(randX, randY, 0.0)
         for i in range(0, container.lengthInCubes):
             cubeX = i
             if (container.cubes[i][0][0].originCoord.x >= randX):
