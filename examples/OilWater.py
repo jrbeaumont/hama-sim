@@ -137,7 +137,11 @@ while True:
     performCalculations(v, timestep)
     # if (c >= 10):
     # updateVisualisation(v)
-    orderedUpdateVis(allBeads)
+    if (c > 2):
+        orderedUpdateVis(allBeads)
+        c = 0
+    else:
+        c += 1
         # c = 0
     # else:
         # c += 1

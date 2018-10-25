@@ -73,6 +73,8 @@ def calculatePosition(volume, timestep):
                         b.position = Vector.add(b.position, Vector.multiply(b.velocityHalfStep, timestep))
 
 def calculateAcceleration(volume, randNums, timestep):
+    avgForce = Vector(0.0, 0.0, 0.0)
+    beadCount = 0
     for i in range(0, volume.lengthInCubes):
         for j in range(0, volume.lengthInCubes):
             if (volume.dimensions == 2):
@@ -99,31 +101,54 @@ def calculateAcceleration(volume, randNums, timestep):
             else:
                 for k in range(0, volume.lengthInCubes):
                     for b in volume.cubes[i][j][k].beads:
+                        beadCount +=1
+                        # print(b.ID + " STARTS WITH " + str(len(b.conForce)) + " CONSERVATIVE FORCES: ")
+                        # input()
+                        # printForces(b.conForce)
                         performLocalCalculations(volume, b, b.container, randNums, timestep)
+                        # print(b.ID + " AFTER LOCAL HAS " + str(len(b.conForce)) + " CONSERVATIVE FORCES: ")
+                        # input()
+                        # printForces(b.conForce)
                         performNeighbourhoodCalculations(volume, b, i, j, k, randNums, timestep)
+                        # print(b.ID + " AFTER NEIGHBOURHOOD HAS " + str(len(b.conForce)) + " CONSERVATIVE FORCES: ")
+                        # input()
+                        # printForces(b.conForce)
                         f = Vector(0.0, 0.0, 0.0)
-                        c = Vector(0.0, 0.0, 0.0)
-                        r = Vector(0.0, 0.0, 0.0)
-                        d = Vector(0.0, 0.0, 0.0)
-                        for v in b.conForce:
-                            if (v != None):
-                                c = Vector.add(c, v)
-                        b.conForce = []
-                        f = Vector.add(f, c)
-                        for v in b.randForce:
-                            if (v != None):
-                                r = Vector.add(r, v)
-                        b.randForce = []
-                        f = Vector.add(f, r)
-                        for v in b.dForce:
-                            if (v != None):
-                                d = Vector.add(d, v)
-                        b.dForce = []
-                        f = Vector.add(f, d)
+                        # c = Vector(0.0, 0.0, 0.0)
+                        # r = Vector(0.0, 0.0, 0.0)
+                        # d = Vector(0.0, 0.0, 0.0)
+                        # print(b.ID + " HAS " + str(len(b.conForce)) + " CONSERVATIVE FORCES: ")
+                        # input()
+                        # printForces(b.conForce)
+                        # for v in b.conForce:
+                        #     if (v != None):
+                        #         c = Vector.add(c, v)
+                        # b.conForce = []
+                        f = Vector.add(f, b.conForce)
+                        # print(b.ID + " CON FORCE: ")
+                        # printForces([b.conForce])
+                        b.conForce = Vector(0.0, 0.0, 0.0)
+                        # for v in b.randForce:
+                        #     if (v != None):
+                        #         r = Vector.add(r, v)
+                        # b.randForce = []
+                        f = Vector.add(f, b.randForce)
+                        b.randForce = Vector(0.0, 0.0, 0.0)
+                        # for v in b.dForce:
+                        #     if (v != None):
+                        #         d = Vector.add(d, v)
+                        # b.dForce = []
+                        f = Vector.add(f, b.dForce)
+                        b.dForce = Vector(0.0, 0.0, 0.0)
                         if (b.bondForce != None):
                             f = Vector.add(f, b.bondForce)
                         b.bondForce = None
+                        avgForce = Vector.add(avgForce, f)
                         b.acceleration = Vector.divide(f, b.mass)
+    avgForce = Vector.divide(avgForce, 1000)
+    # print("avgForce = (" + str(avgForce.x) + ", " + str(avgForce.y) + ", " + str(avgForce.z) + ")")
+    # print("beadCount = " + str(beadCount))
+    # input()
 
 def calculateVelocity(volume, timestep):
     for i in range(0, volume.lengthInCubes):
@@ -136,100 +161,103 @@ def calculateVelocity(volume, timestep):
                     for b in volume.cubes[i][j][k].beads:
                         b.velocity = Vector.add(b.velocityHalfStep, Vector.divide(Vector.multiply(b.acceleration, timestep), 2))
 
-def performLocalCalculations(volume, b1, cube, randNums, timestep):
-    for b2 in cube.beads:
-        if (b1.position.x != b2.position.x or b1.position.y != b2.position.y or b1.position.z != b2.position.z):
-            distances = getShortestDistances(volume, b1.position, b2.position)
+def performLocalCalculations(volume, i, cube, randNums, timestep):
+    for j in cube.beads:
+        if (i.position.x != j.position.x or i.position.y != j.position.y or i.position.z != j.position.z):
+            distances = getShortestDistances(volume, i.position, j.position)
             eucDistance = distances[0]
             vectorDistance = distances[1]
-            # eucDistance = euclidianDistance(volume, b1.position, b2.position)
-            # vectorDistance = Vector.subtract(b1.position, b2.position)
-            b1.conForce.append(conservativeForce(b1, b2, eucDistance, vectorDistance))
-            b1.randForce.append(randomForce(b1, b2, eucDistance, vectorDistance, timestep, randNums))
-            b1.dForce.append(dragForce(b1, b2, eucDistance, vectorDistance))
-            if (b1.bond != None and b1.bondForce == None):
-                b1.bond.calculateBondForce()
+            if (eucDistance < i.cutoffRadius):
+                i.conForce = Vector.add(i.conForce, conservativeForce(i, j, eucDistance, vectorDistance))
+                i.randForce = Vector.add(i.randForce, randomForce(i, j, eucDistance, vectorDistance, timestep, randNums))
+                i.dForce = Vector.add(i.dForce, dragForce(i, j, eucDistance, vectorDistance))
+                if (i.bond != None and j.bondForce == None):
+                    i.bond.calculateBondForce()
 
-def performNeighbourhoodCalculations2D(volume, b, x, y, randNums):
+# def performNeighbourhoodCalculations2D(volume, b, x, y, randNums):
+#     for xLoop in [x - 1, x, x + 1]:
+#         ipos = Vector(b.position.x, b.position.y, 0.0)
+#         jposOffset = Vector(0.0, 0.0, 0.0)
+#         if (xLoop < 0):
+#             xTest = volume.lengthInCubes - 1
+#             ipos.x = ipos.x + (volume.length)
+#         elif (xLoop >= volume.lengthInCubes):
+#             xTest = 0
+#             jposOffset.x = jposOffset.x + (volume.length)
+#         else:
+#             xTest = xLoop
+
+#         for yLoop in [y - 1, y, y + 1]:
+#             ipos.y = b.position.y
+#             jposOffset.y = 0.0
+#             if (xLoop != x or yLoop != y):
+#                 if (yLoop < 0):
+#                     yTest = volume.lengthInCubes - 1
+#                     ipos.y = ipos.y + (volume.length)
+#                 elif (yLoop >= volume.lengthInCubes):
+#                     yTest = 0
+#                     jposOffset.y = jposOffset.y + (volume.length)
+#                 else:
+#                     yTest = yLoop
+
+#                 for b2 in volume.cubes[xTest][yTest].beads:
+#                     # if (b.bond == None or b.bond.getOtherBead != b2):
+#                         jpos = Vector.add(b2.position, jposOffset)
+#                         eucDistance = euclidianDistance(volume, b.position, b2.position)
+#                         vectorDistance = Vector.subtract(ipos, jpos)
+#                         b.conForce.append(conservativeForce(b, b2, eucDistance, vectorDistance))
+#                         b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
+#                         b.dForce.append(dragForce(b, b2, eucDistance, vectorDistance))
+
+def performNeighbourhoodCalculations(volume, i, x, y, z, randNums, timestep):
+    c = 0
     for xLoop in [x - 1, x, x + 1]:
-        ipos = Vector(b.position.x, b.position.y, 0.0)
-        jposOffset = Vector(0.0, 0.0, 0.0)
+        # ipos = Vector(b.position.x, b.position.y, b.position.z)
+        # jposOffset = Vector(0.0, 0.0, 0.0)
         if (xLoop < 0):
             xTest = volume.lengthInCubes - 1
-            ipos.x = ipos.x + (volume.length)
+            # ipos.x = ipos.x + (volume.length)
         elif (xLoop >= volume.lengthInCubes):
             xTest = 0
-            jposOffset.x = jposOffset.x + (volume.length)
+            # jposOffset.x = jposOffset.x + (volume.length)
         else:
             xTest = xLoop
 
         for yLoop in [y - 1, y, y + 1]:
-            ipos.y = b.position.y
-            jposOffset.y = 0.0
-            if (xLoop != x or yLoop != y):
-                if (yLoop < 0):
-                    yTest = volume.lengthInCubes - 1
-                    ipos.y = ipos.y + (volume.length)
-                elif (yLoop >= volume.lengthInCubes):
-                    yTest = 0
-                    jposOffset.y = jposOffset.y + (volume.length)
-                else:
-                    yTest = yLoop
-
-                for b2 in volume.cubes[xTest][yTest].beads:
-                    # if (b.bond == None or b.bond.getOtherBead != b2):
-                        jpos = Vector.add(b2.position, jposOffset)
-                        eucDistance = euclidianDistance(volume, b.position, b2.position)
-                        vectorDistance = Vector.subtract(ipos, jpos)
-                        b.conForce.append(conservativeForce(b, b2, eucDistance, vectorDistance))
-                        b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
-                        b.dForce.append(dragForce(b, b2, eucDistance, vectorDistance))
-
-def performNeighbourhoodCalculations(volume, b, x, y, z, randNums, timestep):
-    for xLoop in [x - 1, x, x + 1]:
-        ipos = Vector(b.position.x, b.position.y, b.position.z)
-        jposOffset = Vector(0.0, 0.0, 0.0)
-        if (xLoop < 0):
-            xTest = volume.lengthInCubes - 1
-            ipos.x = ipos.x + (volume.length)
-        elif (xLoop >= volume.lengthInCubes):
-            xTest = 0
-            jposOffset.x = jposOffset.x + (volume.length)
-        else:
-            xTest = xLoop
-
-        for yLoop in [y - 1, y, y + 1]:
-            ipos.y = b.position.y
-            jposOffset.y = 0.0
+            # ipos.y = b.position.y
+            # jposOffset.y = 0.0
             if (yLoop < 0):
                 yTest = volume.lengthInCubes - 1
-                ipos.y = ipos.y + (volume.length)
+                # ipos.y = ipos.y + (volume.length)
             elif (yLoop >= volume.lengthInCubes):
                 yTest = 0
-                jposOffset.y = jposOffset.y + (volume.length)
+                # jposOffset.y = jposOffset.y + (volume.length)
             else:
                 yTest = yLoop
 
             for zLoop in [z - 1, z, z + 1]:
-                ipos.z = b.position.z
-                jposOffset.z = 0.0
+                # ipos.z = b.position.z
+                # jposOffset.z = 0.0
                 if (xLoop != x or yLoop != y or zLoop != z):
                     if (zLoop < 0):
                         zTest = volume.lengthInCubes - 1
-                        ipos.z = ipos.z + (volume.length)
+                        # ipos.z = ipos.z + (volume.length)
                     elif (zLoop >= volume.lengthInCubes):
                         zTest = 0
-                        jposOffset.z = jposOffset.z + (volume.length)
+                        # jposOffset.z = jposOffset.z + (volume.length)
                     else:
                         zTest = zLoop
 
-                    for b2 in volume.cubes[xTest][yTest][zTest].beads:
-                        jpos = Vector.add(b2.position, jposOffset)
-                        distance = getShortestDistances(volume, ipos, jpos)
+                    for j in volume.cubes[xTest][yTest][zTest].beads:
+                        # jpos = Vector.add(b2.position, jposOffset)
+                        distance = getShortestDistances(volume, i.position, j.position)
                         eucDistance = distance[0]
                         vectorDistance = distance[1]
-                        # eucDistance = euclidianDistance(volume, ipos, jpos)
-                        # vectorDistance = Vector.subtract(ipos, jpos)
-                        b.conForce.append(conservativeForce(b, b2, eucDistance, vectorDistance))
-                        b.randForce.append(randomForce(b, b2, eucDistance, vectorDistance, timestep, randNums))
-                        b.dForce.append(dragForce(b, b2, eucDistance, vectorDistance))
+                        if (eucDistance < i.cutoffRadius):
+                            i.conForce = Vector.add(i.conForce, conservativeForce(i, j, eucDistance, vectorDistance))
+                            i.randForce = Vector.add(i.randForce, randomForce(i, j, eucDistance, vectorDistance, timestep, randNums))
+                            i.dForce = Vector.add(i.dForce, dragForce(i, j, eucDistance, vectorDistance))
+
+def printForces(vs):
+    for v in vs:
+        print("\t(" + str(v.x) + ", " + str(v.y) + ", " + str(v.z) + ")")

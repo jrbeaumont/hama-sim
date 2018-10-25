@@ -16,12 +16,12 @@ class Bead:
     ID = ""
     container = None
     position = Vector(0.0, 0.0, 0.0)
-    velocity = Vector(0.0, 0.0, 0.0);
-    acceleration = Vector(0.0, 0.0, 0.0);
+    velocity = Vector(0.0, 0.0, 0.0)
+    acceleration = Vector(0.0, 0.0, 0.0)
     cutoffRadius = 1.0
-    conForce = []
-    randForce = []
-    dForce = []
+    conForce = Vector(0.0, 0.0, 0.0)
+    randForce = Vector(0.0, 0.0, 0.0)
+    dForce = Vector(0.0, 0.0, 0.0)
     bond = None
     bondForce = None
     velocityHalfStep = Vector(0.0, 0.0, 0.0)
@@ -195,6 +195,7 @@ def conservativeForce(i, j, eucDistance, vectorDistance):
         vectorDivide = Vector.divide(vectorDistance, eucDistance)
         result = intStrength * (1 - (eucDistance/i.cutoffRadius))
         result = Vector.multiply(vectorDivide, result)
+        # print(i.ID + " -> " + j.ID + " conservative result = (" + str(result.x) + ", " + str(result.y) + ", " + str(result.z) + ")")
         return result
 
 def randomForce(i, j, eucDistance, vectorDistance, timestep, randNums):
