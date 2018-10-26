@@ -127,7 +127,7 @@ cubesPerDimension = 10
 timestep = 0.02
 
 v = Container(cubesPerDimension, cubeLength, 3, 1)
-addBeads(v, 600, 300, 100)
+addBeads(v, 1200, 600, 200)
 
 prepVisualisation(v)
 orderedUpdateVis(allBeads)
@@ -137,11 +137,11 @@ while True:
     performCalculations(v, timestep)
     # if (c >= 10):
     # updateVisualisation(v)
-    if (c > 2):
-        orderedUpdateVis(allBeads)
-        c = 0
-    else:
-        c += 1
+    # if (c > 50):
+    orderedUpdateVis(allBeads)
+        # c = 0
+    # else:
+        # c += 1
         # c = 0
     # else:
         # c += 1
