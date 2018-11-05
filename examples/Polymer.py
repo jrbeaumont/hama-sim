@@ -11,6 +11,7 @@ from src.Visualiser import *
 
 allBeads = []
 bondedBeads = []
+allBonds = []
 
 class BeadW(Bead):
     typeName = "Water"
@@ -85,12 +86,12 @@ def addBeads(container, nW, nB):
                 cubeZ = k - 1
                 break
         beadX -= 0.5
-        beadY -= 0.5
-        beadZ -= 0.5
+        # beadY -= 0.5
+        # beadZ -= 0.5
         if (beadX < 0):
             beadX = 9.75
-            beadY = 9.75
-            beadZ = 9.75
+            # beadY = 9.75
+            # beadZ = 9.75
         bead = BeadB(container.cubes[cubeX][cubeY][cubeZ], vector, interactionMatrix[BeadB.typeNumber])
         container.cubes[cubeX][cubeY][cubeZ].beads.append(bead)
         allBeads.append(bead)
@@ -98,13 +99,21 @@ def addBeads(container, nW, nB):
             bond = Bond(0.5, 128, prevBead, bead)
             prevBead.bonds.append(bond)
             bead.bonds.append(bond)
+            allBonds.append(bond)
         bondedBeads.append(bead)
         prevBead = bead
 
 def clearVisitedBonds(bs):
     for b in bs:
-        # print("BEAD " + b.ID + " position = (" + str(b.position.x) + ", " + str(b.position.y) + ", " +str(b.position.z) + ")")
         b.bondsVisited = []
+
+def averageBondLengths(bs):
+    result = 0.0
+    for b in bs:
+        result += b.currentLength
+        # print(b.currentLength)
+    result /= len(bs)
+    print("AVERAGE BOND LENGTH = " + str(result))
 
 volX = 10
 volY = 10
@@ -123,15 +132,6 @@ orderedUpdateVis(allBeads)
 c = 0
 while True:
     clearVisitedBonds(bondedBeads)
+    # averageBondLengths(allBonds)
     performCalculations(v, timestep)
-    # if (c >= 10):
-    # updateVisualisation(v)
-    # if (c > 50):
     orderedUpdateVis(allBeads)
-        # c = 0
-    # else:
-        # c += 1
-        # c = 0
-    # else:
-        # c += 1
-    # time.sleep(5)
