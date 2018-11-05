@@ -62,8 +62,9 @@ class Bead:
 
 class Bond:
     eqLength = 0.0
+    currentLength = 0.0
     U = 0.0
-    k = 1
+    k = 0.0
     bead1 = None
     bead2 = None
 
@@ -88,16 +89,14 @@ class Bond:
 
     def calculateBondForce(self):
         if (self not in self.bead1.bondsVisited) and (self not in self.bead2.bondsVisited):
+            # print("BOND BETWEEN " + self.bead1.ID + " AND " + self.bead2.ID)
             n = getShortestDistances(self.bead1.container.container, self.bead1.position, self.bead2.position)
             eucDistance = n[0]
-            # print("I:  " + self.bead1.ID + " position = (" + str(self.bead1.position.x) + ", " + str(self.bead1.position.y) + ", " +str(self.bead1.position.z) + ")")
-            # print("J:  " + self.bead2.ID + " position = (" + str(self.bead2.position.x) + ", " + str(self.bead2.position.y) + ", " +str(self.bead2.position.z) + ")")
-            # print(eucDistance)
-            if (eucDistance > 1.5):
-                input()
+            self.currentLength = eucDistance
             vecDistance = n[1]
             nU = self.newU(eucDistance)
             f = Vector.multiply(vecDistance, -1 * (1 / eucDistance) * (self.U))
+            # print("FORCE OF THIS BOND = (" + str(f.x) + ", " + str(f.y) + ", " + str(f.z) + ")")
             self.bead1.bondForce = Vector.add(self.bead1.bondForce, f)
             self.bead2.bondForce = Vector.add(self.bead2.bondForce, (Vector.multiply(f,-1)))
             self.U = nU
@@ -128,54 +127,40 @@ def allBeadTypes():
     return result
 
 def getShortestDistances(volume, i, j):
-    result = (math.sqrt(((i.x - j.x) ** 2) + ((i.y - j.y) ** 2) + ((i.z - j.z) ** 2)), i, j)
-    iPoss = []
-    jPoss = []
-    r = []
-    # I
-    iPoss.append(i)
-    iPoss.append(Vector(i.x, i.y, i.z + volume.length))
-    iPoss.append(Vector(i.x, i.y + volume.length, i.z))
-    iPoss.append(Vector(i.x, i.y + volume.length, i.z + volume.length))
-    iPoss.append(Vector(i.x + volume.length, i.y, i.z))
-    iPoss.append(Vector(i.x + volume.length, i.y, i.z + volume.length))
-    iPoss.append(Vector(i.x + volume.length, i.y + volume.length, i.z))
-    iPoss.append(Vector(i.x + volume.length, i.y + volume.length, i.z + volume.length))
-    # J
-    jPoss.append(j)
-    jPoss.append(Vector(j.x, j.y, j.z + volume.length))
-    jPoss.append(Vector(j.x, j.y + volume.length, j.z))
-    jPoss.append(Vector(j.x, j.y + volume.length, j.z + volume.length))
-    jPoss.append(Vector(j.x + volume.length, j.y, j.z))
-    jPoss.append(Vector(j.x + volume.length, j.y, j.z + volume.length))
-    jPoss.append(Vector(j.x + volume.length, j.y + volume.length, j.z))
-    jPoss.append(Vector(j.x + volume.length, j.y + volume.length, j.z + volume.length))
+    maxDistance = volume.cubeLength * 2
+    tempI = Vector(i.x, i.y, i.z)
+    tempJ = Vector(j.x, j.y, j.z)
 
-    # for p in range(0, len(iPoss)):
-    #     e = math.sqrt(((iPoss[p].x - j.x) ** 2) + ((iPoss[p].y - j.y) ** 2) + ((iPoss[p].z - j.z) ** 2))
-    #     t = (e, iPoss[p], j)
-    #     r.append(t)
+    xDiff = tempI.x - tempJ.x
+    if (xDiff > maxDistance or xDiff < (-1 * maxDistance)):
+        if (xDiff < 0):
+            tempI.x = tempI.x + (volume.lengthInCubes * volume.cubeLength)
+        else:
+            tempJ.x = tempJ.x + (volume.lengthInCubes * volume.cubeLength)
 
-    # for q in range(0, len(jPoss)):
-    #     e = math.sqrt(((i.x - jPoss[q].x) ** 2) + ((i.y - jPoss[q].y) ** 2) + ((i.z - jPoss[q].z) ** 2))
-    #     t = (e, i, jPoss[q])
-    #     r.append(t)
+    yDiff = tempI.y - tempJ.y
+    if (yDiff > maxDistance or yDiff < (-1 * maxDistance)):
+        if (yDiff < 0):
+            tempI.y = tempI.y + (volume.lengthInCubes * volume.cubeLength)
+        else:
+            tempJ.y = tempJ.y + (volume.lengthInCubes * volume.cubeLength)
 
-    for p in range(0, len(iPoss)):
-        for q in range(0, len(jPoss)):
-            e = math.sqrt(((iPoss[p].x - jPoss[q].x) ** 2) + ((iPoss[p].y - jPoss[q].y) ** 2) + ((iPoss[p].z - jPoss[q].z) ** 2))
-            t = (e, iPoss[p], jPoss[q])
-            r.append(t)
+    zDiff = tempI.z - tempJ.z
+    if (zDiff > maxDistance or zDiff < (-1 * maxDistance)):
+        if (zDiff < 0):
+            tempI.z = tempI.z + (volume.lengthInCubes * volume.cubeLength)
+        else:
+            tempJ.z = tempJ.z + (volume.lengthInCubes * volume.cubeLength)
 
-    for x in r:
-        if x[0] < result[0]:
-            result = x
+    e = math.sqrt(((tempI.x - tempJ.x) ** 2) + ((tempI.y - tempJ.y) ** 2) + ((tempI.z - tempJ.z) ** 2))
+    v = Vector.subtract(tempI, tempJ)
 
-    eucDistance = result[0]
-    vecDistance = Vector.subtract(result[1], result[2])
-    # print("eucDistance = " + str(eucDistance))
-    # print("vecDistance = (" + str(vecDistance.x) + ", " + str(vecDistance.y) + ", " + str(vecDistance.z) + ")")
-    return (eucDistance, vecDistance)
+    # print("tempI : x = " + str(tempI.x) + ", y = " + str(tempI.y) + ", z = " + str(tempI.z))
+    # print("tempJ : x = " + str(tempJ.x) + ", y = " + str(tempJ.y) + ", z = " + str(tempJ.z))
+    # print("EUC = " + str(e))
+    # print("VEC : x = " + str(v.x) + ", y = " + str(v.y) + ", z = " + str(v.z))
+
+    return (e, v)
 
 def conservativeForce(i, j, eucDistance, vectorDistance):
     if (eucDistance < i.cutoffRadius):
