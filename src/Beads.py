@@ -22,8 +22,9 @@ class Bead:
     conForce = Vector(0.0, 0.0, 0.0)
     randForce = Vector(0.0, 0.0, 0.0)
     dForce = Vector(0.0, 0.0, 0.0)
-    bond = None
-    bondForce = None
+    bonds = []
+    bondsVisited = []
+    bondForce = Vector(0.0, 0.0, 0.0)
     velocityHalfStep = Vector(0.0, 0.0, 0.0)
     dragCoefficient = 4.5
     stochasticConstant = 0.0
@@ -60,19 +61,21 @@ class Bead:
 #     typeNumber = 2
 
 class Bond:
-    eqLength = 0.75
+    eqLength = 0.0
     U = 0.0
     k = 1
     bead1 = None
     bead2 = None
 
-    def __init__(self, bead1, bead2):
-        self.bead1 = bead1
-        self.bead2 = bead2
-        eucDistance = euclidianDistance(bead1.container.container, bead1.position, bead2.position)
+    def __init__(self, eqL, konstant, b1, b2):
+        self.eqLength = eqL
+        self.k = konstant
+        self.bead1 = b1
+        self.bead2 = b2
+        eucDistance = getShortestDistances(b1.container.container, b1.position, b2.position)[0]
         self.U = self.newU(eucDistance)
-        self.bead1.bond = self
-        self.bead2.bond = self
+        self.bead1.bonds.append(self)
+        self.bead2.bonds.append(self)
 
     def getOtherBead(self, bead):
         if (bead.position.x == bead1.position.x and bead.position.y == bead1.position.y and bead.position.z == bead1.position.z):
@@ -80,49 +83,26 @@ class Bond:
         elif (bead.position.x == bead2.position.x and bead.position.y == bead2.position.y and bead.position.z == bead2.position.z):
             return bead2
 
-    def ensureBeadsAreNeighbours(self):
-        iPos = Vector(self.bead1.position.x, self.bead1.position.y, self.bead1.position.z)
-        jPos = Vector(self.bead2.position.x, self.bead2.position.y, self.bead2.position.z)
-        ix = self.bead1.container.arrayPosX
-        jx = self.bead2.container.arrayPosX
-        iy = self.bead1.container.arrayPosY
-        jy = self.bead2.container.arrayPosY
-        iz = self.bead1.container.arrayPosZ
-        jz = self.bead2.container.arrayPosZ
-        if (ix == 0 and jx == self.bead1.container.container.lengthInCubes - 1):
-            iPos.x = iPos.x + self.bead1.container.container.length
-        if (jx == 0 and ix == self.bead1.container.container.lengthInCubes - 1):
-            jPos.x = jPos.x + self.bead1.container.container.length
-        if (iy == 0 and jy == self.bead1.container.container.lengthInCubes - 1):
-            iPos.y = iPos.y + self.bead2.container.container.length
-        if (jy == 0 and iy == self.bead1.container.container.lengthInCubes - 1):
-            jPos.y = jPos.y + self.bead1.container.container.length
-        if (iz == 0 and jz == self.bead1.container.container.lengthInCubes - 1):
-            iPos.z = iPos.z + self.bead2.container.container.length
-        if (jz == 0 and iz == self.bead1.container.container.lengthInCubes - 1):
-            jPos.z = jPos.z + self.bead1.container.container.length
-        return (iPos, jPos)
-
     def newU(self, eucDistance):
-        # n = self.ensureBeadsAreNeighbours()
-        # iPos = n[0]
-        # jPos = n[1]
-        # eucDistance = euclidianDistance(self.bead1.container.container, iPos, jPos)
         return (self.k / 2) * ((eucDistance - self.eqLength) ** 2)
 
     def calculateBondForce(self):
-        n = self.ensureBeadsAreNeighbours()
-        iPos = n[0]
-        jPos = n[1]
-        # iPos = self.bead1.position
-        # jPos = self.bead2.position
-        eucDistance = euclidianDistance(self.bead1.container.container, self.bead1.position, self.bead2.position)
-        nU = self.newU(eucDistance)
-        vectorDistance = Vector.subtract(iPos, jPos)
-        f = Vector.multiply(vectorDistance, -1 * (1 / eucDistance) * (self.U))
-        self.bead1.bondForce = f
-        self.bead2.bondForce = Vector.multiply(f,-1)
-        self.U = nU
+        if (self not in self.bead1.bondsVisited) and (self not in self.bead2.bondsVisited):
+            n = getShortestDistances(self.bead1.container.container, self.bead1.position, self.bead2.position)
+            eucDistance = n[0]
+            # print("I:  " + self.bead1.ID + " position = (" + str(self.bead1.position.x) + ", " + str(self.bead1.position.y) + ", " +str(self.bead1.position.z) + ")")
+            # print("J:  " + self.bead2.ID + " position = (" + str(self.bead2.position.x) + ", " + str(self.bead2.position.y) + ", " +str(self.bead2.position.z) + ")")
+            # print(eucDistance)
+            if (eucDistance > 1.5):
+                input()
+            vecDistance = n[1]
+            nU = self.newU(eucDistance)
+            f = Vector.multiply(vecDistance, -1 * (1 / eucDistance) * (self.U))
+            self.bead1.bondForce = Vector.add(self.bead1.bondForce, f)
+            self.bead2.bondForce = Vector.add(self.bead2.bondForce, (Vector.multiply(f,-1)))
+            self.U = nU
+            self.bead1.bondsVisited.append(self)
+            self.bead2.bondsVisited.append(self)
 
 def generateID(numberOfCharacters):
     randomID = ""
@@ -153,6 +133,7 @@ def getShortestDistances(volume, i, j):
     jPoss = []
     r = []
     # I
+    iPoss.append(i)
     iPoss.append(Vector(i.x, i.y, i.z + volume.length))
     iPoss.append(Vector(i.x, i.y + volume.length, i.z))
     iPoss.append(Vector(i.x, i.y + volume.length, i.z + volume.length))
@@ -161,6 +142,7 @@ def getShortestDistances(volume, i, j):
     iPoss.append(Vector(i.x + volume.length, i.y + volume.length, i.z))
     iPoss.append(Vector(i.x + volume.length, i.y + volume.length, i.z + volume.length))
     # J
+    jPoss.append(j)
     jPoss.append(Vector(j.x, j.y, j.z + volume.length))
     jPoss.append(Vector(j.x, j.y + volume.length, j.z))
     jPoss.append(Vector(j.x, j.y + volume.length, j.z + volume.length))
@@ -169,15 +151,21 @@ def getShortestDistances(volume, i, j):
     jPoss.append(Vector(j.x + volume.length, j.y + volume.length, j.z))
     jPoss.append(Vector(j.x + volume.length, j.y + volume.length, j.z + volume.length))
 
-    for p in range(0, len(iPoss)):
-        e = math.sqrt(((iPoss[p].x - j.x) ** 2) + ((iPoss[p].y - j.y) ** 2) + ((iPoss[p].z - j.z) ** 2))
-        t = (e, iPoss[p], j)
-        r.append(t)
+    # for p in range(0, len(iPoss)):
+    #     e = math.sqrt(((iPoss[p].x - j.x) ** 2) + ((iPoss[p].y - j.y) ** 2) + ((iPoss[p].z - j.z) ** 2))
+    #     t = (e, iPoss[p], j)
+    #     r.append(t)
 
-    for q in range(0, len(jPoss)):
-        e = math.sqrt(((i.x - jPoss[q].x) ** 2) + ((i.y - jPoss[q].y) ** 2) + ((i.z - jPoss[q].z) ** 2))
-        t = (e, i, jPoss[q])
-        r.append(t)
+    # for q in range(0, len(jPoss)):
+    #     e = math.sqrt(((i.x - jPoss[q].x) ** 2) + ((i.y - jPoss[q].y) ** 2) + ((i.z - jPoss[q].z) ** 2))
+    #     t = (e, i, jPoss[q])
+    #     r.append(t)
+
+    for p in range(0, len(iPoss)):
+        for q in range(0, len(jPoss)):
+            e = math.sqrt(((iPoss[p].x - jPoss[q].x) ** 2) + ((iPoss[p].y - jPoss[q].y) ** 2) + ((iPoss[p].z - jPoss[q].z) ** 2))
+            t = (e, iPoss[p], jPoss[q])
+            r.append(t)
 
     for x in r:
         if x[0] < result[0]:

@@ -140,9 +140,8 @@ def calculateAcceleration(volume, randNums, timestep):
                         # b.dForce = []
                         f = Vector.add(f, b.dForce)
                         b.dForce = Vector(0.0, 0.0, 0.0)
-                        if (b.bondForce != None):
-                            f = Vector.add(f, b.bondForce)
-                        b.bondForce = None
+                        f = Vector.add(f, b.bondForce)
+                        b.bondForce = Vector(0.0, 0.0, 0.0)
                         avgForce = Vector.add(avgForce, f)
                         b.acceleration = Vector.divide(f, b.mass)
     avgForce = Vector.divide(avgForce, 1000)
@@ -171,8 +170,9 @@ def performLocalCalculations(volume, i, cube, randNums, timestep):
                 i.conForce = Vector.add(i.conForce, conservativeForce(i, j, eucDistance, vectorDistance))
                 i.randForce = Vector.add(i.randForce, randomForce(i, j, eucDistance, vectorDistance, timestep, randNums))
                 i.dForce = Vector.add(i.dForce, dragForce(i, j, eucDistance, vectorDistance))
-                if (i.bond != None and j.bondForce == None):
-                    i.bond.calculateBondForce()
+                if (i.bonds != None):
+                    for p in i.bonds:
+                        p.calculateBondForce()
 
 # def performNeighbourhoodCalculations2D(volume, b, x, y, randNums):
 #     for xLoop in [x - 1, x, x + 1]:
